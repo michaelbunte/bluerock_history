@@ -252,7 +252,7 @@ const MyChart = ({
             let x_pos = time_to_main_chart_x(data[Math.floor(i)][0]);
             let y_pos = main_chart_value_to_y(data[Math.floor(i)][1]);
             main_chart_line_points += `${x_pos},${y_pos} `
-        } catch (e) {}
+        } catch (e) { }
     }
 
     main_chart_line_points += `${time_to_main_chart_x(data[data.length - 1][0])},${NAVBAR_BOTTOM} `;
@@ -398,6 +398,8 @@ const MyChart = ({
     const [dragging_box, set_dragging_box] = useState(false);
     const [x_pos_box_curr, set_x_pos_box_curr] = useState(100);
     const [x_pos_box_start, set_x_pos_box_start] = useState(100);
+    const [hovered_point_pos, set_hovered_point_pos] = useState([-100, -100]);
+
     useEffect(() => {
         const handle_mouse_move = function (e) {
             e.stopPropagation();
@@ -408,13 +410,18 @@ const MyChart = ({
         }
         const handle_mouse_up = function (e) {
             e.stopPropagation();
-            if(dragging_box) {
+            if (dragging_box) {
+                if (x_pos_box_start === x_pos_box_curr) {
+                    set_dragging_box(false);
+                    return;
+                }
+
                 let min_pos = Math.min(x_pos_box_curr, x_pos_box_start);
                 let max_pos = Math.max(x_pos_box_curr, x_pos_box_start);
-                
+
                 let min_pos_time = main_chart_x_to_time(min_pos);
                 let max_pos_time = main_chart_x_to_time(max_pos);
-                
+                set_hovered_point_pos([-100, -100]);
                 set_x_pos_brush_1(time_to_navbar_x(min_pos_time));
                 set_x_pos_brush_2(time_to_navbar_x(max_pos_time));
                 set_dragging_box(false);
@@ -427,28 +434,58 @@ const MyChart = ({
             window.removeEventListener('mousemove', handle_mouse_move);
             window.removeEventListener('mouseup', handle_mouse_up);
         };
-    }, [dragging_box, x_pos_box_curr])
+    }, [dragging_box, x_pos_box_curr, hovered_point_pos])
+
+    const on_center_rect_click = (e) => {
+        e.stopPropagation();
+        set_dragging_box(true);
+        set_x_pos_box_curr(e.clientX);
+        set_x_pos_box_start(e.clientX);
+    };
+
+    let highlight_rect = dragging_box && <rect
+        x={Math.min(x_pos_box_start, x_pos_box_curr)}
+        y={MAIN_CHART_TOP}
+        height={MAIN_CHART_BOTTOM - MAIN_CHART_TOP}
+        width={Math.abs(x_pos_box_curr - x_pos_box_start)}
+        fill="rgba(0,0,0,0.2)"
+    />
+
+    //========================================================================
+    // Highlight closest point
+
+    
+    const on_center_rect_hover = (e) => {
+        let hovered_time = main_chart_x_to_time(e.clientX);
+        let chosen_index = find_target_time_index(hovered_time, data)
+        let new_x_pos_1 = time_to_main_chart_x(data[chosen_index][0]);
+        let new_y_pos_1 = main_chart_value_to_y(data[chosen_index][1]);
+
+        let new_x_pos_2 = time_to_main_chart_x(data[chosen_index + 1][0]);
+        let new_y_pos_2 = main_chart_value_to_y(data[chosen_index + 1][1]);
+
+
+        if(Math.abs(new_x_pos_1 - e.clientX) < Math.abs(new_x_pos_2 - e.clientX)) {
+            set_hovered_point_pos([new_x_pos_1, new_y_pos_1]);
+        } else {
+            set_hovered_point_pos([new_x_pos_2, new_y_pos_2]);
+        }
+    }
+
+
+    const hovered_point = <g transform={`translate(${hovered_point_pos[0]},${hovered_point_pos[1]})`}>
+        <circle cx={0} cy={0} r="3" />
+    </g>
 
     let clickable_rect = <rect
-        onMouseDown={(e) => {
-            e.stopPropagation();
-            set_dragging_box(true);
-            set_x_pos_box_curr(e.clientX);
-            set_x_pos_box_start(e.clientX);
-        }}
+        onMouseDown={on_center_rect_click}
+        onMouseMove={on_center_rect_hover}
+        onMouseLeave={()=>set_hovered_point_pos([-100,-100])}
         x="0"
         y={MAIN_CHART_TOP}
         width={width}
         height={MAIN_CHART_BOTTOM - MAIN_CHART_TOP}
         fill="rgba(0,0,0,0.0)"
-    />
-
-    let highlight_rect = dragging_box && <rect 
-        x={Math.min(x_pos_box_start, x_pos_box_curr)}
-        y={MAIN_CHART_TOP}
-        height={MAIN_CHART_BOTTOM-MAIN_CHART_TOP}
-        width={Math.abs(x_pos_box_curr - x_pos_box_start)}
-        fill="rgba(0,0,0,0.2)"
     />
 
 
@@ -579,6 +616,7 @@ const MyChart = ({
                 />
                 {clickable_rect}
                 {highlight_rect}
+                {hovered_point}
             </svg>
         </div>
     );
