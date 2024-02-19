@@ -6,12 +6,14 @@ const NAVBAR_RESOLUTION = 200;
 const MAIN_CHART_RESOLUTION = 4000;
 const DATE_SPACING_1_HEIGHT = 25;
 const DATE_SPACING_2_HEIGHT = 30;
-const DATE_SPACING_WIDTH = 80;
+const NAVBAR_DATE_SPACING_WIDTH = 80;
+const MAIN_CHART_DATE_SPACING_WIDTH = 80;
 
 
-function mapRange(value, fromMin, fromMax, toMin, toMax) {
+function mapRange(value, fromMin, fromMax, toMin, toMax, clamped=false) {
     // Ensure the input value is within the source range
-    const clampedValue = Math.min(Math.max(value, fromMin), fromMax);
+    const clampedValue = clamped ? Math.min(Math.max(value, fromMin), fromMax)
+                            : value;
 
     // Calculate the percentage of the input value within the source range
     const percentage = (clampedValue - fromMin) / (fromMax - fromMin);
@@ -212,8 +214,17 @@ const MyChart = ({
 
     //========================================================================
     // Main Chart Polyline
+
     let brush_1_time = navbar_x_to_time(x_pos_brush_1);
     let brush_2_time = navbar_x_to_time(x_pos_brush_2);
+
+    const time_to_main_chart_x = (time) => {
+        return mapRange(time, brush_1_time, brush_2_time, 0, width);
+    }
+
+    const main_chart_x_to_time = (x) => {
+        return mapRange(x, 0, width, brush_1_time, brush_2_time);
+    }
 
     let first_index = find_target_time_index(brush_1_time, data);
     let last_index = find_target_time_index(brush_2_time, data);
@@ -222,7 +233,7 @@ const MyChart = ({
     let main_chart_line_points = `${-1},${NAVBAR_BOTTOM} `;
     for (let i = first_index; i <= last_index + Math.max(main_chart_step_size, 2); i += main_chart_step_size) {
         try {
-            let x_pos = mapRange(data[Math.floor(i)][0], brush_1_time, brush_2_time, 0, width);
+            let x_pos = time_to_main_chart_x(data[Math.floor(i)][0]);
             let y_pos = mapRange(data[Math.floor(i)][1], 0, max, 0, MAIN_CHART_BOTTOM);
             main_chart_line_points += `${x_pos},${y_pos} `
         } catch (e) { }
@@ -230,10 +241,10 @@ const MyChart = ({
     main_chart_line_points += `${width + 1},${NAVBAR_BOTTOM} `;
 
     //========================================================================
-    // Navbar time
+    // Navbar Dates
 
     let navbar_dates = [];
-    for (let i = DATE_SPACING_WIDTH / 2; i < width; i += DATE_SPACING_WIDTH) {
+    for (let i = NAVBAR_DATE_SPACING_WIDTH / 2; i < width; i += NAVBAR_DATE_SPACING_WIDTH) {
         let current_time = navbar_x_to_time(i);
 
         try {
@@ -262,6 +273,41 @@ const MyChart = ({
         } catch (e) { };
     }
 
+    //========================================================================
+    // Main Chart Dates
+
+    let time_step_size = main_chart_x_to_time(MAIN_CHART_DATE_SPACING_WIDTH) - main_chart_x_to_time(0);
+    let start_time_difference = brush_1_time - start_time;
+    let first_date_start_time = start_time + Math.floor(start_time_difference / time_step_size) * time_step_size;
+
+    let main_chart_dates = [];
+    for (let i = first_date_start_time; i < brush_2_time + time_step_size; i += time_step_size) {
+        main_chart_dates.push(<g
+            transform={`translate(${time_to_main_chart_x(i)}, ${0})`}
+        >
+            <line
+                x1="0"
+                x2="0"
+                y1={MAIN_CHART_BOTTOM}
+                y2={MAIN_CHART_BOTTOM + 6}
+                stroke="black"
+                strokeWidth="1"
+            />
+            <text
+                x="0"
+                y={MAIN_CHART_BOTTOM + 17}
+                fontFamily="Arial"
+                fontSize="10"
+                textAnchor="middle"
+                pointerEvents="none"
+                fill="black">{
+                    print_date(i, brush_1_time, brush_2_time)
+                }</text>
+        </g>)
+    }
+
+    //========================================================================
+    // Scrollbar
 
     let scroll_width = Math.max(Math.abs(x_pos_brush_1 - x_pos_brush_2), 10);
     let scroll_x = Math.min(x_pos_brush_1, x_pos_brush_2) + Math.abs(x_pos_brush_1 - x_pos_brush_2) / 2 - scroll_width / 2;
@@ -345,7 +391,7 @@ const MyChart = ({
                     />
                 </g>
                 {navbar_dates}
-
+                {main_chart_dates}
                 <line
                     x1="0"
                     x2={width}
