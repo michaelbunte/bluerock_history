@@ -9,12 +9,13 @@ const DATE_SPACING_2_HEIGHT = 30;
 const NAVBAR_DATE_SPACING_WIDTH = 80;
 const MAIN_CHART_DATE_SPACING_WIDTH = 80;
 const MAIN_CHART_VALUE_SPACING_HEIGHT = 50;
+const MAIN_CHART_TOP = 20;
 
 
-function mapRange(value, fromMin, fromMax, toMin, toMax, clamped=false) {
+function mapRange(value, fromMin, fromMax, toMin, toMax, clamped = false) {
     // Ensure the input value is within the source range
     const clampedValue = clamped ? Math.min(Math.max(value, fromMin), fromMax)
-                            : value;
+        : value;
 
     // Calculate the percentage of the input value within the source range
     const percentage = (clampedValue - fromMin) / (fromMax - fromMin);
@@ -225,7 +226,7 @@ const MyChart = ({
     for (let i = first_index; i <= last_index + Math.max(main_chart_step_size, 2); i += main_chart_step_size) {
         try {
             local_chart_max = Math.max(data[Math.floor(i)][1], local_chart_max)
-        } catch(e){}
+        } catch (e) { }
     }
 
 
@@ -236,11 +237,11 @@ const MyChart = ({
         return mapRange(x, 0, width, brush_1_time, brush_2_time);
     }
     const main_chart_y_to_value = (y) => {
-        return mapRange(y, MAIN_CHART_BOTTOM, 0, 0, local_chart_max);
+        return mapRange(y, MAIN_CHART_BOTTOM, MAIN_CHART_TOP, 0, local_chart_max);
     }
 
     const main_chart_value_to_y = (value) => {
-        return mapRange(value, 0, local_chart_max, MAIN_CHART_BOTTOM, 0);
+        return mapRange(value, 0, local_chart_max, MAIN_CHART_BOTTOM, MAIN_CHART_TOP);
     }
 
 
@@ -251,10 +252,10 @@ const MyChart = ({
             let x_pos = time_to_main_chart_x(data[Math.floor(i)][0]);
             let y_pos = main_chart_value_to_y(data[Math.floor(i)][1]);
             main_chart_line_points += `${x_pos},${y_pos} `
-        } catch (e) {console.log(e) }
+        } catch (e) { console.log(e) }
     }
 
-    main_chart_line_points += `${time_to_main_chart_x(data[data.length-1][0])},${NAVBAR_BOTTOM} `;
+    main_chart_line_points += `${time_to_main_chart_x(data[data.length - 1][0])},${NAVBAR_BOTTOM} `;
 
     //========================================================================
     // Navbar Dates
@@ -328,6 +329,25 @@ const MyChart = ({
     let scroll_width = Math.max(Math.abs(x_pos_brush_1 - x_pos_brush_2) + 10, 20);
     let scroll_x = Math.min(x_pos_brush_1, x_pos_brush_2) + Math.abs(x_pos_brush_1 - x_pos_brush_2) / 2 - scroll_width / 2;
 
+    //========================================================================
+    // Horizontal Chart Lines
+    let horizontal_lines = [];
+    for(let i = MAIN_CHART_BOTTOM; i > MAIN_CHART_TOP; i -= MAIN_CHART_VALUE_SPACING_HEIGHT) {
+        horizontal_lines.push(<g
+            transform={`translate(${0},${i})`}
+        >
+            <line
+                x1="0"
+                y1="0"
+                x2={width}
+                y2="0"
+                stroke="rgba(0,0,0,0.2)"
+                strokeWidth="1px"
+            />
+        </g>)
+    }
+
+
     return (
         <div>
             <svg width={width} height={height} xmlns="http://www.w3.org/2000/svg">
@@ -345,7 +365,7 @@ const MyChart = ({
                     fill="lightgreen"
                 />
 
-                <rect 
+                <rect
                     x={0}
                     y={MAIN_CHART_BOTTOM}
                     height={NAVBAR_BOTTOM - MAIN_CHART_BOTTOM}
@@ -424,6 +444,15 @@ const MyChart = ({
                     y2={MAIN_CHART_BOTTOM}
                     stroke="black"
                 />
+                <text
+                    x="15"
+                    y="17"
+                    fontFamily="Arial"
+                    fontSize="10"
+                    textAnchor="left"
+                    pointerEvents="none"
+                    fill="black">HELLO</text>
+                {horizontal_lines}
             </svg>
         </div>
     );
