@@ -6,6 +6,7 @@ const NAVBAR_RESOLUTION = 200;
 const MAIN_CHART_RESOLUTION = 4000;
 const DATE_SPACING_1_HEIGHT = 25;
 const DATE_SPACING_2_HEIGHT = 25;
+const DATE_SPACING_WIDTH = 80;
 
 
 function mapRange(value, fromMin, fromMax, toMin, toMax) {
@@ -20,19 +21,67 @@ function mapRange(value, fromMin, fromMax, toMin, toMax) {
     return mappedValue;
 }
 
+function print_date(date, range_start, range_end) {
+    const date_obj = new Date(date);
+    const range_size = Math.abs(range_start - range_end);
+
+    if(range_size < 1000 * 30) {
+        const formattedDate = date_obj.toLocaleString("en-GB", {
+            minute: "2-digit",
+            second: "2-digit"
+        });
+        return formattedDate;
+    }
+
+    if(range_size < 1000 * 60 * 30) {
+        const formattedDate = date_obj.toLocaleString("en-GB", {
+            hour: "numeric",
+            minute: "2-digit",
+            second: "2-digit"
+        });
+        return formattedDate;
+    }
+
+    if(range_size < 1000 * 60 * 60 * 12) {
+        const formattedDate = date_obj.toLocaleString("en-GB", {
+            day: "numeric",
+            hour: "numeric",
+            minute: "2-digit",
+        });
+        return formattedDate;
+    }
+
+    if(range_size < 1000 * 60 * 60 * 24 * 10) {
+        const formattedDate = date_obj.toLocaleString("en-GB", {
+            month: "short",
+            day: "numeric",
+            hour: "numeric",
+        });
+        return formattedDate;
+    }
+
+    const formattedDate = date_obj.toLocaleString("en-GB", {
+        year: "numeric",
+        month: "short",
+        day: "numeric",
+        hour: "numeric",
+    });
+    return formattedDate;
+}
+
 function find_target_time_index(target_time, data) {
-    if(data.length === 0) {
+    if (data.length === 0) {
         return -1;
     }
 
     let lower = 0;
     let upper = data.length - 1;
 
-    if(target_time < data[lower]) { return lower; }
-    if(target_time > data[upper]) { return upper; }
+    if (target_time < data[lower]) { return lower; }
+    if (target_time > data[upper]) { return upper; }
 
-    while(upper - lower > 1) {
-        let middle = Math.floor((upper + lower)/2);
+    while (upper - lower > 1) {
+        let middle = Math.floor((upper + lower) / 2);
         let middle_value = data[middle][0];
         if (target_time > middle_value) {
             lower = middle;
@@ -78,7 +127,7 @@ const MyChart = ({
     width,
     data
 }) => {
-    
+
 
 
     const time_to_navbar_x = (time) => {
@@ -157,26 +206,59 @@ const MyChart = ({
         navbar_points += `${x_pos},${y_pos} `
     }
     navbar_points += `${width},${NAVBAR_HEIGHT}`;
-    
+
 
     //========================================================================
     // Main Chart Polyline
     let brush_1_time = navbar_x_to_time(x_pos_brush_1);
     let brush_2_time = navbar_x_to_time(x_pos_brush_2);
-    
+
     let first_index = find_target_time_index(brush_1_time, data);
     let last_index = find_target_time_index(brush_2_time, data);
     const main_chart_step_size = data.length / MAIN_CHART_RESOLUTION;
 
     let main_chart_line_points = ``;
-    for(let i = first_index; i <= last_index + Math.max(main_chart_step_size, 2); i+=main_chart_step_size) {
+    for (let i = first_index; i <= last_index + Math.max(main_chart_step_size, 2); i += main_chart_step_size) {
         try {
             let x_pos = mapRange(data[Math.floor(i)][0], brush_1_time, brush_2_time, 0, width);
             let y_pos = mapRange(data[Math.floor(i)][1], 0, max, 0, height - NAVBAR_HEIGHT - DATE_SPACING_2_HEIGHT - DATE_SPACING_1_HEIGHT);
             main_chart_line_points += `${x_pos},${y_pos} `
-        } catch(e) {}
+        } catch (e) { }
     }
 
+    //========================================================================
+    // Navbar time
+
+    let navbar_dates = [];
+    for (let i = DATE_SPACING_WIDTH / 2; i < width; i += DATE_SPACING_WIDTH) {
+        let current_x_pos = Math.floor(i);
+        let current_time = navbar_x_to_time(i);
+
+        try {
+            navbar_dates.push(<g
+                transform={`translate(${i}, ${0})`}
+            >
+                <line
+                    x1="0"
+                    x2="0"
+                    y1={height - DATE_SPACING_2_HEIGHT}
+                    y2={height - DATE_SPACING_2_HEIGHT + 6}
+                    stroke="black"
+                    strokeWidth="1"
+                />
+                <text
+                    x="0"
+                    y={height - DATE_SPACING_2_HEIGHT + 17}
+                    fontFamily="Arial"
+                    fontSize="10"
+                    textAnchor="middle"
+                    fill="black">{
+                        print_date(current_time, start_time, end_time)
+                    }</text>
+            </g>);
+        } catch (e) { };
+    }
+    console.log(navbar_dates)
 
     return (
         <div>
@@ -196,7 +278,7 @@ const MyChart = ({
                         stroke="black" />
                 </g>
 
-                <polyline 
+                <polyline
                     points={main_chart_line_points}
                     stroke="black"
                     fill="none"
@@ -245,6 +327,7 @@ const MyChart = ({
                         y_pos={height - NAVBAR_HEIGHT - DATE_SPACING_2_HEIGHT}
                     />
                 </g>
+                {navbar_dates}
             </svg>
         </div>
     );
