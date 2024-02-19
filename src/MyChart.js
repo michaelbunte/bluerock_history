@@ -16,24 +16,34 @@ function mapRange(value, fromMin, fromMax, toMin, toMax) {
     return mappedValue;
 }
 
+function find_target_time_index(target_time, data) {
+    if(data.length === 0) {
+        return -1;
+    }
+
+    let lower = 0;
+    let upper = data.length - 1;
+
+    while(upper - lower > 1) {
+        let middle = Math.floor((upper + lower)/2);
+        let middle_value = data[middle][0];
+        if (target_time > middle_value) {
+            lower = middle;
+        } else if (target_time < middle_value) {
+            upper = middle;
+        } else {
+            return middle;
+        }
+    }
+    return lower;
+}
+
 
 const Brush = ({
     x_pos,
     y_pos
 }) => {
-    return <g
-    // onMouseDown={(e) => {
-    //     e.stopPropagation();
-    //     set_x_origin(e.clientX - x_pos);
-    //     set_dragging(true);
-    // }}
-    >
-        <rect
-            x={x_pos - 5}
-            y={y_pos + NAVBAR_HEIGHT / 4}
-            width={10}
-            height={NAVBAR_HEIGHT / 2}
-        />
+    return <g>
         <line
             strokeLinecap="round"
             x1={x_pos}
@@ -42,6 +52,16 @@ const Brush = ({
             y2={y_pos + NAVBAR_HEIGHT}
             strokeWidth="4"
             stroke="black" />
+        <rect
+            x={x_pos - 5}
+            y={y_pos + NAVBAR_HEIGHT / 4}
+            width={10}
+            height={NAVBAR_HEIGHT / 2}
+            rx={5}
+            fill="white"
+            stroke="black"
+            strokeWidth="4"
+        />
     </g>
 }
 
@@ -59,8 +79,12 @@ const MyChart = ({
     const time_to_navbar_x = (time) => {
         return mapRange(time, start_time, end_time, 0, width);
     }
+    const navbar_x_to_time = (time) => {
+        return mapRange(time, 0, width, start_time, end_time);
+    }
 
-
+    //========================================================================
+    // Brush 1
     const [dragging_brush_1, set_dragging_brush_1] = useState(false);
     const [x_origin_brush_1, set_x_origin_brush_1] = useState(0);
     const [x_pos_brush_1, set_x_pos_brush_1] = useState(100);
@@ -84,7 +108,8 @@ const MyChart = ({
         };
     }, [x_pos_brush_1, dragging_brush_1, x_origin_brush_1]);
 
-
+    //========================================================================
+    // Brush 2
     const [dragging_brush_2, set_dragging_brush_2] = useState(false);
     const [x_origin_brush_2, set_x_origin_brush_2] = useState(0);
     const [x_pos_brush_2, set_x_pos_brush_2] = useState(200);
@@ -109,7 +134,8 @@ const MyChart = ({
     }, [x_pos_brush_2, dragging_brush_2, x_origin_brush_2]);
 
 
-
+    //========================================================================
+    // Navbar polyline
     let max = 0;
     for (let i = 0; i < data.length; i += navbar_step_size) {
         max = Math.max(data[Math.floor(i)][1], max);
@@ -122,9 +148,8 @@ const MyChart = ({
         navbar_points += `${x_pos},${y_pos} `
     }
     navbar_points += `${width},${NAVBAR_HEIGHT}`;
+    
 
-    console.log(x_pos_brush_1)
-    console.log(x_pos_brush_2)
     return (
         <div>
             <svg width={width} height={height} xmlns="http://www.w3.org/2000/svg">
