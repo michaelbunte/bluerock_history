@@ -252,7 +252,7 @@ const MyChart = ({
             let x_pos = time_to_main_chart_x(data[Math.floor(i)][0]);
             let y_pos = main_chart_value_to_y(data[Math.floor(i)][1]);
             main_chart_line_points += `${x_pos},${y_pos} `
-        } catch (e) { console.log(e) }
+        } catch (e) {}
     }
 
     main_chart_line_points += `${time_to_main_chart_x(data[data.length - 1][0])},${NAVBAR_BOTTOM} `;
@@ -403,7 +403,6 @@ const MyChart = ({
             e.stopPropagation();
             if (dragging_box) {
                 set_x_pos_box_curr(e.clientX);
-                console.log("1")
             }
 
         }
@@ -436,7 +435,6 @@ const MyChart = ({
             set_dragging_box(true);
             set_x_pos_box_curr(e.clientX);
             set_x_pos_box_start(e.clientX);
-            console.log("3")
         }}
         x="0"
         y={MAIN_CHART_TOP}
