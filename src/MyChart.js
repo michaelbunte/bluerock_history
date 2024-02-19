@@ -18,52 +18,28 @@ function mapRange(value, fromMin, fromMax, toMin, toMax) {
 
 
 const Brush = ({
-    start_x = 0,
-    start_y
+    x_pos,
+    y_pos
 }) => {
-    const [dragging, set_dragging] = useState(false);
-    const [x_origin, set_x_origin] = useState(0);
-    const [x_pos, set_x_pos] = useState(start_x);
-    useEffect(() => {
-
-        const handle_mouse_move = function (e) {
-            e.stopPropagation();
-            if (dragging) {
-                set_x_pos(e.clientX - x_origin)
-            }
-        }
-        const handle_mouse_up = function (e) {
-            e.stopPropagation()
-            set_dragging(false);
-        }
-        window.addEventListener('mousemove', handle_mouse_move);
-        window.addEventListener('mouseup', handle_mouse_up);
-
-        return () => {
-            window.removeEventListener('mousemove', handle_mouse_move);
-            window.removeEventListener('mouseup', handle_mouse_up);
-        };
-    }, [x_pos, dragging, x_origin]);
-
     return <g
-        onMouseDown={(e) => {
-            e.stopPropagation();
-            set_x_origin(e.clientX - x_pos);
-            set_dragging(true);
-        }}
+    // onMouseDown={(e) => {
+    //     e.stopPropagation();
+    //     set_x_origin(e.clientX - x_pos);
+    //     set_dragging(true);
+    // }}
     >
         <rect
             x={x_pos - 5}
-            y={start_y + NAVBAR_HEIGHT / 4}
+            y={y_pos + NAVBAR_HEIGHT / 4}
             width={10}
             height={NAVBAR_HEIGHT / 2}
         />
         <line
             strokeLinecap="round"
             x1={x_pos}
-            y1={start_y}
+            y1={y_pos}
             x2={x_pos}
-            y2={start_y + NAVBAR_HEIGHT}
+            y2={y_pos + NAVBAR_HEIGHT}
             strokeWidth="4"
             stroke="black" />
     </g>
@@ -87,11 +63,36 @@ const MyChart = ({
         return mapRange(time, start_time, end_time, 0, width);
     }
 
+
+    const [dragging_brush_1, set_dragging_brush_1] = useState(false);
+    const [x_origin_brush_1, set_x_origin_brush_1] = useState(0);
+    const [x_pos_brush_1, set_x_pos_brush_1] = useState(100);
+    useEffect(() => {
+        const handle_mouse_move = function (e) {
+            e.stopPropagation();
+            if (dragging_brush_1) {
+                set_x_pos_brush_1(e.clientX - x_origin_brush_1)
+            }
+        }
+        const handle_mouse_up = function (e) {
+            e.stopPropagation()
+            set_dragging_brush_1(false);
+        }
+        window.addEventListener('mousemove', handle_mouse_move);
+        window.addEventListener('mouseup', handle_mouse_up);
+
+        return () => {
+            window.removeEventListener('mousemove', handle_mouse_move);
+            window.removeEventListener('mouseup', handle_mouse_up);
+        };
+    }, [x_pos_brush_1, dragging_brush_1, x_origin_brush_1]);
+
+
+
     let max = 0;
     for (let i = 0; i < data.length; i += navbar_step_size) {
         max = Math.max(data[Math.floor(i)][1], max);
     }
-    console.log(max)
 
     let navbar_points = `0,${NAVBAR_HEIGHT} `;
     for (let i = 0; i < data.length; i += navbar_step_size) {
@@ -102,9 +103,6 @@ const MyChart = ({
     navbar_points += `${width},${NAVBAR_HEIGHT}`;
 
 
-    const start_brush_x = time_to_navbar_x(Math.min(brush_1, brush_2));
-    const end_brush_x = time_to_navbar_x(Math.max(brush_1, brush_2));
-    const brush_width = end_brush_x - start_brush_x;
     return (
         <div>
             <svg width={width} height={height} xmlns="http://www.w3.org/2000/svg">
@@ -115,12 +113,7 @@ const MyChart = ({
                     height="100%"
                     stroke="none"
                     fill="lightgreen" />
-                {/* <rect
-                    x="0"
-                    stroke="none"
-                    y={height - NAVBAR_HEIGHT}
-                    width="100%" height={NAVBAR_HEIGHT}
-                    fill="white" /> */}
+
                 <g transform={`translate(0, ${height - NAVBAR_HEIGHT})`}>
                     <polyline
                         points={navbar_points}
@@ -128,42 +121,18 @@ const MyChart = ({
                         stroke="black" />
                 </g>
 
-                <rect
-                    x={start_brush_x}
-                    y={height - NAVBAR_HEIGHT}
-                    height={NAVBAR_HEIGHT}
-                    width={brush_width}
-                    stroke="none"
-                    fill="rgba(100,100,100,0.5)"
-                />
-
-                <line
-                    strokeLinecap="round"
-                    x1={start_brush_x}
-                    y1={height - NAVBAR_HEIGHT}
-                    x2={start_brush_x}
-                    y2={height}
-                    strokeWidth="4"
-                    stroke="black" />
-
-                <line
-                    strokeLinecap="round"
-                    x1={end_brush_x}
-                    y1={height - NAVBAR_HEIGHT}
-                    x2={end_brush_x}
-                    y2={height}
-                    strokeWidth="4"
-                    stroke="black" />
-                <Brush
-                    start_y={height - NAVBAR_HEIGHT}
-                    start_x={50}
-                />
-
-                <Brush
-                    start_y={height - NAVBAR_HEIGHT}
-                    start_x={100}
-                />
-
+                <g
+                    onMouseDown={(e) => {
+                        e.stopPropagation();
+                        set_x_origin_brush_1(e.clientX - x_pos_brush_1);
+                        set_dragging_brush_1(true);
+                    }}
+                >
+                    <Brush
+                        x_pos={x_pos_brush_1}
+                        y_pos={height - NAVBAR_HEIGHT}
+                    />
+                </g>
             </svg>
         </div>
     );
