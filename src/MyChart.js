@@ -128,7 +128,9 @@ const MyChart = ({
     data
 }) => {
 
-
+    const NAVBAR_BOTTOM = height - DATE_SPACING_2_HEIGHT;
+    const NAVBAR_TOP = height - DATE_SPACING_2_HEIGHT - NAVBAR_HEIGHT;
+    const MAIN_CHART_BOTTOM = height - DATE_SPACING_2_HEIGHT - NAVBAR_HEIGHT - DATE_SPACING_1_HEIGHT;
 
     const time_to_navbar_x = (time) => {
         return mapRange(time, start_time, end_time, 0, width);
@@ -217,21 +219,21 @@ const MyChart = ({
     let last_index = find_target_time_index(brush_2_time, data);
     const main_chart_step_size = data.length / MAIN_CHART_RESOLUTION;
 
-    let main_chart_line_points = ``;
+    let main_chart_line_points = `${-1},${NAVBAR_BOTTOM} `;
     for (let i = first_index; i <= last_index + Math.max(main_chart_step_size, 2); i += main_chart_step_size) {
         try {
             let x_pos = mapRange(data[Math.floor(i)][0], brush_1_time, brush_2_time, 0, width);
-            let y_pos = mapRange(data[Math.floor(i)][1], 0, max, 0, height - NAVBAR_HEIGHT - DATE_SPACING_2_HEIGHT - DATE_SPACING_1_HEIGHT);
+            let y_pos = mapRange(data[Math.floor(i)][1], 0, max, 0, MAIN_CHART_BOTTOM);
             main_chart_line_points += `${x_pos},${y_pos} `
         } catch (e) { }
     }
+    main_chart_line_points += `${width + 1},${NAVBAR_BOTTOM} `;
 
     //========================================================================
     // Navbar time
 
     let navbar_dates = [];
     for (let i = DATE_SPACING_WIDTH / 2; i < width; i += DATE_SPACING_WIDTH) {
-        let current_x_pos = Math.floor(i);
         let current_time = navbar_x_to_time(i);
 
         try {
@@ -241,14 +243,14 @@ const MyChart = ({
                 <line
                     x1="0"
                     x2="0"
-                    y1={height - DATE_SPACING_2_HEIGHT}
-                    y2={height - DATE_SPACING_2_HEIGHT + 6}
+                    y1={NAVBAR_BOTTOM}
+                    y2={NAVBAR_BOTTOM + 6}
                     stroke="black"
                     strokeWidth="1"
                 />
                 <text
                     x="0"
-                    y={height - DATE_SPACING_2_HEIGHT + 17}
+                    y={NAVBAR_BOTTOM + 17}
                     fontFamily="Arial"
                     fontSize="10"
                     textAnchor="middle"
@@ -269,20 +271,21 @@ const MyChart = ({
                     width="100%"
                     height="100%"
                     stroke="none"
-                    fill="lightgreen" />
+                    fill="white" />
 
-                <g transform={`translate(0, ${height - NAVBAR_HEIGHT - DATE_SPACING_2_HEIGHT})`}>
+                <polyline
+                    points={main_chart_line_points}
+                    stroke="black"
+                    fill="lightgreen"
+                />
+
+                <g transform={`translate(0, ${NAVBAR_TOP})`}>
                     <polyline
                         points={navbar_points}
                         fill="lightblue"
                         stroke="black" />
                 </g>
 
-                <polyline
-                    points={main_chart_line_points}
-                    stroke="black"
-                    fill="none"
-                />
 
                 <rect
                     onMouseDown={(e) => {
@@ -295,7 +298,7 @@ const MyChart = ({
                     }}
 
                     x={Math.min(x_pos_brush_1, x_pos_brush_2)}
-                    y={height - NAVBAR_HEIGHT - DATE_SPACING_2_HEIGHT}
+                    y={NAVBAR_TOP}
                     height={NAVBAR_HEIGHT}
                     width={Math.abs(x_pos_brush_2 - x_pos_brush_1)}
                     fill="rgba(0,0,0,0.2)"
@@ -311,7 +314,7 @@ const MyChart = ({
                 >
                     <Brush
                         x_pos={x_pos_brush_1}
-                        y_pos={height - NAVBAR_HEIGHT - DATE_SPACING_2_HEIGHT}
+                        y_pos={NAVBAR_TOP}
                     />
                 </g>
 
@@ -324,7 +327,7 @@ const MyChart = ({
                 >
                     <Brush
                         x_pos={x_pos_brush_2}
-                        y_pos={height - NAVBAR_HEIGHT - DATE_SPACING_2_HEIGHT}
+                        y_pos={NAVBAR_TOP}
                     />
                 </g>
                 {navbar_dates}
