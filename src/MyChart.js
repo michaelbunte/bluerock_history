@@ -51,13 +51,10 @@ const MyChart = ({
     width,
     data
 }) => {
-
+    
     const start_time = data[0][0];
     const end_time = data[data.length - 1][0];
     const navbar_step_size = data.length / NAVBAR_RESOLUTION;
-
-    const [brush_1, set_brush_1] = useState(data[10][0]);
-    const [brush_2, set_brush_2] = useState(data[20][0]);
 
     const time_to_navbar_x = (time) => {
         return mapRange(time, start_time, end_time, 0, width);
@@ -71,7 +68,7 @@ const MyChart = ({
         const handle_mouse_move = function (e) {
             e.stopPropagation();
             if (dragging_brush_1) {
-                set_x_pos_brush_1(e.clientX - x_origin_brush_1)
+                set_x_pos_brush_1(Math.max(Math.min(e.clientX - x_origin_brush_1, width), 0));
             }
         }
         const handle_mouse_up = function (e) {
@@ -95,7 +92,7 @@ const MyChart = ({
         const handle_mouse_move = function (e) {
             e.stopPropagation();
             if (dragging_brush_2) {
-                set_x_pos_brush_2(e.clientX - x_origin_brush_2)
+                set_x_pos_brush_2(Math.max(Math.min(e.clientX - x_origin_brush_2, width), 0));
             }
         }
         const handle_mouse_up = function (e) {
@@ -126,7 +123,8 @@ const MyChart = ({
     }
     navbar_points += `${width},${NAVBAR_HEIGHT}`;
 
-
+    console.log(x_pos_brush_1)
+    console.log(x_pos_brush_2)
     return (
         <div>
             <svg width={width} height={height} xmlns="http://www.w3.org/2000/svg">
