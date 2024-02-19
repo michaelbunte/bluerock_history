@@ -1,6 +1,8 @@
 import React from 'react';
 import { useState, useEffect } from 'react';
 
+const NAVBAR_HEIGHT = 50;
+const NAVBAR_RESOLUTION = 200;
 
 function mapRange(value, fromMin, fromMax, toMin, toMax) {
     // Ensure the input value is within the source range
@@ -14,47 +16,10 @@ function mapRange(value, fromMin, fromMax, toMin, toMax) {
     return mappedValue;
 }
 
-const Label = ({ center, adjustment }) => {
-    const [dragging, setDragging] = useState(false);
-    const [coordinates, setCoordinates] = useState({ x: 0, y: 0 });
-    const [origin, setOrigin] = useState({ x: 0, y: 0 });
 
-    // Add our new coordinates to the X and Y position values.
-    const labelX = center[0] + adjustment[0] + coordinates.x;
-    const labelY = center[1] + adjustment[1] + coordinates.y;
-
-    return (
-        <g
-            style={{ userSelect: 'none' }}
-            transform={`translate(${labelX}, ${labelY})`}
-            onMouseDown={e => {
-                // Record our starting point.
-                setOrigin({ x: e.clientX, y: e.clientY });
-                setDragging(true);
-            }}
-            onMouseMove={e => {
-                if (dragging) {
-                    // Set state for the change in coordinates.
-                    setCoordinates({
-                        x: e.clientX - origin.x,
-                        y: e.clientY - origin.y,
-                    });
-                }
-            }}
-            onMouseUp={() => {
-                setDragging(false);
-            }}
-        >
-            <text>
-                hello
-            </text>
-        </g>
-    );
-};
-
-const Brush = ({ 
-    start_x=0, 
-    start_y 
+const Brush = ({
+    start_x = 0,
+    start_y
 }) => {
     const [dragging, set_dragging] = useState(false);
     const [x_origin, set_x_origin] = useState(0);
@@ -64,14 +29,10 @@ const Brush = ({
         const handle_mouse_move = function (e) {
             e.stopPropagation();
             if (dragging) {
-                console.log("====")
-                console.log(`e.clientX: ${e.clientX}`);
-                console.log(`x_origin: ${x_origin}`);
                 set_x_pos(e.clientX - x_origin)
             }
         }
         const handle_mouse_up = function (e) {
-            console.log("xxxxxxxxxxxx")
             e.stopPropagation()
             set_dragging(false);
         }
@@ -84,16 +45,28 @@ const Brush = ({
         };
     }, [x_pos, dragging, x_origin]);
 
-    return <circle
+    return <g
         onMouseDown={(e) => {
             e.stopPropagation();
             set_x_origin(e.clientX - x_pos);
             set_dragging(true);
         }}
-        cx={x_pos}
-        cy={start_y}
-        r={50}
-    />
+    >
+        <rect
+            x={x_pos - 5}
+            y={start_y + NAVBAR_HEIGHT / 4}
+            width={10}
+            height={NAVBAR_HEIGHT / 2}
+        />
+        <line
+            strokeLinecap="round"
+            x1={x_pos}
+            y1={start_y}
+            x2={x_pos}
+            y2={start_y + NAVBAR_HEIGHT}
+            strokeWidth="4"
+            stroke="black" />
+    </g>
 }
 
 
@@ -102,8 +75,6 @@ const MyChart = ({
     width,
     data
 }) => {
-    const NAVBAR_HEIGHT = 50;
-    const NAVBAR_RESOLUTION = 200;
 
     const start_time = data[0][0];
     const end_time = data[data.length - 1][0];
@@ -177,7 +148,16 @@ const MyChart = ({
                     y2={height}
                     strokeWidth="4"
                     stroke="black" />
-                <Brush />
+                <Brush
+                    start_y={height - NAVBAR_HEIGHT}
+                    start_x={50}
+                />
+
+                <Brush
+                    start_y={height - NAVBAR_HEIGHT}
+                    start_x={100}
+                />
+
             </svg>
         </div>
     );
