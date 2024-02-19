@@ -391,6 +391,82 @@ const MyChart = ({
         minute: "2-digit",
         second: "2-digit"
     });
+
+    //========================================================================
+    // Selectable Chart Logic
+
+    /*
+        const [dragging_brush_1, set_dragging_brush_1] = useState(false);
+        const [x_origin_brush_1, set_x_origin_brush_1] = useState(0);
+        const [x_pos_brush_1, set_x_pos_brush_1] = useState(100);
+        useEffect(() => {
+            const handle_mouse_move = function (e) {
+                e.stopPropagation();
+                if (dragging_brush_1) {
+                    set_x_pos_brush_1(e.clientX - x_origin_brush_1);
+                }
+            }
+            const handle_mouse_up = function (e) {
+                e.stopPropagation()
+                set_dragging_brush_1(false);
+            }
+            window.addEventListener('mousemove', handle_mouse_move);
+            window.addEventListener('mouseup', handle_mouse_up);
+    
+            return () => {
+                window.removeEventListener('mousemove', handle_mouse_move);
+                window.removeEventListener('mouseup', handle_mouse_up);
+            };
+        }, [x_pos_brush_1, dragging_brush_1, x_origin_brush_1]);
+    */
+
+    const [dragging_box, set_dragging_box] = useState(false);
+    const [x_pos_box_curr, set_x_pos_box_curr] = useState(100);
+    const [x_pos_box_start, set_x_pos_box_start] = useState(100);
+    useEffect(() => {
+        const handle_mouse_move = function (e) {
+            e.stopPropagation();
+            if (dragging_box) {
+                set_x_pos_box_curr(e.clientX);
+            }
+        }
+        const handle_mouse_up = function (e) {
+            e.stopPropagation();
+            set_dragging_box(false);
+        }
+        window.addEventListener('mousemove', handle_mouse_move);
+        window.addEventListener('mouseup', handle_mouse_up);
+
+        return () => {
+            window.removeEventListener('mousemove', handle_mouse_move);
+            window.removeEventListener('mouseup', handle_mouse_up);
+        };
+    }, [dragging_box, x_pos_box_curr])
+
+    let clickable_rect = <rect
+        onMouseDown={(e) => {
+            e.stopPropagation();
+            set_dragging_box(true);
+            set_x_pos_box_curr(e.clientX);
+            set_x_pos_box_start(e.clientX);
+        }}
+        x="0"
+        y={MAIN_CHART_TOP}
+        width={width}
+        height={MAIN_CHART_BOTTOM - MAIN_CHART_TOP}
+        fill="rgba(0,0,0,0.0)"
+    />
+
+    let highlight_rect = dragging_box && <rect 
+        x={Math.min(x_pos_box_start, x_pos_box_curr)}
+        y={MAIN_CHART_TOP}
+        height={MAIN_CHART_BOTTOM-MAIN_CHART_TOP}
+        width={Math.abs(x_pos_box_curr - x_pos_box_start)}
+        fill="rgba(0,0,0,0.2)"
+    />
+
+    console.log(x_pos_box_curr);
+
     return (
         <div>
             <svg width={width} height={height} xmlns="http://www.w3.org/2000/svg">
@@ -490,14 +566,14 @@ const MyChart = ({
                     userSelect="none"
                     fill="black">{vertical_line_time}</text>
                 <rect
-                    onClick={()=>{set_show_vertical_line(prev=>!prev);}}
-                    x={width-90}
+                    onClick={() => { set_show_vertical_line(prev => !prev); }}
+                    x={width - 90}
                     y="7"
                     width="100"
                     height="13"
                     fill="rgba(0,0,0,0)"
                 />
-                
+
                 <text
                     x={width - 15}
                     y="17"
@@ -516,6 +592,8 @@ const MyChart = ({
                     y2={MAIN_CHART_BOTTOM}
                     stroke="black"
                 />
+                {clickable_rect}
+                {highlight_rect}
             </svg>
         </div>
     );
