@@ -199,15 +199,15 @@ const MyChart = ({
     const end_time = data[data.length - 1][0];
     const navbar_step_size = data.length / NAVBAR_RESOLUTION;
 
-    let max = 0;
+    let navbar_max = 0;
     for (let i = 0; i < data.length; i += navbar_step_size) {
-        max = Math.max(data[Math.floor(i)][1], max);
+        navbar_max = Math.max(data[Math.floor(i)][1], navbar_max);
     }
 
     let navbar_points = `0,${NAVBAR_HEIGHT} `;
     for (let i = 0; i < data.length; i += navbar_step_size) {
         let x_pos = time_to_navbar_x(data[Math.floor(i)][0]);
-        let y_pos = mapRange(data[Math.floor(i)][1], 0, max, NAVBAR_HEIGHT, 0);
+        let y_pos = mapRange(data[Math.floor(i)][1], 0, navbar_max, NAVBAR_HEIGHT, 0);
         navbar_points += `${x_pos},${y_pos} `
     }
     navbar_points += `${width},${NAVBAR_HEIGHT}`;
@@ -215,9 +215,19 @@ const MyChart = ({
 
     //========================================================================
     // Main Chart Polyline
-
     let brush_1_time = navbar_x_to_time(x_pos_brush_1);
     let brush_2_time = navbar_x_to_time(x_pos_brush_2);
+    let first_index = find_target_time_index(brush_1_time, data);
+    let last_index = find_target_time_index(brush_2_time, data);
+    const main_chart_step_size = data.length / MAIN_CHART_RESOLUTION;
+
+    let local_chart_max = data[first_index][1];
+    for (let i = first_index; i <= last_index + Math.max(main_chart_step_size, 2); i += main_chart_step_size) {
+        try {
+            local_chart_max = Math.max(data[Math.floor(i)][1], local_chart_max)
+        } catch(e){}
+    }
+
 
     const time_to_main_chart_x = (time) => {
         return mapRange(time, brush_1_time, brush_2_time, 0, width);
@@ -226,26 +236,24 @@ const MyChart = ({
         return mapRange(x, 0, width, brush_1_time, brush_2_time);
     }
     const main_chart_y_to_value = (y) => {
-        return mapRange(y, MAIN_CHART_BOTTOM, 0, 0, max);
+        return mapRange(y, MAIN_CHART_BOTTOM, 0, 0, local_chart_max);
     }
 
     const main_chart_value_to_y = (value) => {
-        return mapRange(value, 0, max, MAIN_CHART_BOTTOM, 0);
+        return mapRange(value, 0, local_chart_max, MAIN_CHART_BOTTOM, 0);
     }
 
 
-    let first_index = find_target_time_index(brush_1_time, data);
-    let last_index = find_target_time_index(brush_2_time, data);
-    const main_chart_step_size = data.length / MAIN_CHART_RESOLUTION;
-
     let main_chart_line_points = `${time_to_main_chart_x(data[0][0])},${NAVBAR_BOTTOM} `;
+    let b = 0;
     for (let i = first_index; i <= last_index + Math.max(main_chart_step_size, 2); i += main_chart_step_size) {
         try {
             let x_pos = time_to_main_chart_x(data[Math.floor(i)][0]);
             let y_pos = main_chart_value_to_y(data[Math.floor(i)][1]);
             main_chart_line_points += `${x_pos},${y_pos} `
-        } catch (e) { }
+        } catch (e) {console.log(e) }
     }
+
     main_chart_line_points += `${time_to_main_chart_x(data[data.length-1][0])},${NAVBAR_BOTTOM} `;
 
     //========================================================================
