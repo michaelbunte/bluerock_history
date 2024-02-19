@@ -3,6 +3,8 @@ import { useState, useEffect } from 'react';
 
 const NAVBAR_HEIGHT = 50;
 const NAVBAR_RESOLUTION = 200;
+const MAIN_CHART_RESOLUTION = 1000;
+
 
 function mapRange(value, fromMin, fromMax, toMin, toMax) {
     // Ensure the input value is within the source range
@@ -23,6 +25,9 @@ function find_target_time_index(target_time, data) {
 
     let lower = 0;
     let upper = data.length - 1;
+
+    if(target_time < data[lower]) { return lower; }
+    if(target_time > data[upper]) { return upper; }
 
     while(upper - lower > 1) {
         let middle = Math.floor((upper + lower)/2);
@@ -72,9 +77,7 @@ const MyChart = ({
     data
 }) => {
     
-    const start_time = data[0][0];
-    const end_time = data[data.length - 1][0];
-    const navbar_step_size = data.length / NAVBAR_RESOLUTION;
+
 
     const time_to_navbar_x = (time) => {
         return mapRange(time, start_time, end_time, 0, width);
@@ -136,6 +139,10 @@ const MyChart = ({
 
     //========================================================================
     // Navbar polyline
+    const start_time = data[0][0];
+    const end_time = data[data.length - 1][0];
+    const navbar_step_size = data.length / NAVBAR_RESOLUTION;
+
     let max = 0;
     for (let i = 0; i < data.length; i += navbar_step_size) {
         max = Math.max(data[Math.floor(i)][1], max);
@@ -149,6 +156,25 @@ const MyChart = ({
     }
     navbar_points += `${width},${NAVBAR_HEIGHT}`;
     
+
+    //========================================================================
+    // Main Chart Polyline
+    let brush_1_time = navbar_x_to_time(x_pos_brush_1);
+    let brush_2_time = navbar_x_to_time(x_pos_brush_2);
+    
+    let first_index = find_target_time_index(brush_1_time, data);
+    let last_index = find_target_time_index(brush_2_time, data);
+    const main_chart_step_size = data.length / MAIN_CHART_RESOLUTION;
+
+    let main_chart_line_points = ``;
+    for(let i = first_index; i <= last_index + Math.max(main_chart_step_size, 2); i+=main_chart_step_size) {
+        try {
+            let x_pos = mapRange(data[Math.floor(i)][0], brush_1_time, brush_2_time, 0, width);
+            let y_pos = mapRange(data[Math.floor(i)][1], 0, max, 0, height - NAVBAR_HEIGHT);
+            main_chart_line_points += `${x_pos},${y_pos} `
+        } catch(e) {}
+    }
+
 
     return (
         <div>
@@ -167,6 +193,12 @@ const MyChart = ({
                         fill="lightblue"
                         stroke="black" />
                 </g>
+
+                <polyline 
+                    points={main_chart_line_points}
+                    stroke="black"
+                    fill="none"
+                />
 
                 <rect
                     onMouseDown={(e) => {

@@ -12,7 +12,7 @@ function App() {
     <div>
       <MyChart
         data={data}
-        width={500}
+        width={700}
         height={300}
       />
     </div>
