@@ -5,7 +5,7 @@ const NAVBAR_HEIGHT = 50;
 const NAVBAR_RESOLUTION = 200;
 const MAIN_CHART_RESOLUTION = 4000;
 const DATE_SPACING_1_HEIGHT = 25;
-const DATE_SPACING_2_HEIGHT = 25;
+const DATE_SPACING_2_HEIGHT = 30;
 const DATE_SPACING_WIDTH = 80;
 
 
@@ -25,7 +25,7 @@ function print_date(date, range_start, range_end) {
     const date_obj = new Date(date);
     const range_size = Math.abs(range_start - range_end);
 
-    if(range_size < 1000 * 30) {
+    if (range_size < 1000 * 30) {
         const formattedDate = date_obj.toLocaleString("en-GB", {
             minute: "2-digit",
             second: "2-digit"
@@ -33,7 +33,7 @@ function print_date(date, range_start, range_end) {
         return formattedDate;
     }
 
-    if(range_size < 1000 * 60 * 30) {
+    if (range_size < 1000 * 60 * 30) {
         const formattedDate = date_obj.toLocaleString("en-GB", {
             hour: "numeric",
             minute: "2-digit",
@@ -42,7 +42,7 @@ function print_date(date, range_start, range_end) {
         return formattedDate;
     }
 
-    if(range_size < 1000 * 60 * 60 * 12) {
+    if (range_size < 1000 * 60 * 60 * 12) {
         const formattedDate = date_obj.toLocaleString("en-GB", {
             day: "numeric",
             hour: "numeric",
@@ -51,7 +51,7 @@ function print_date(date, range_start, range_end) {
         return formattedDate;
     }
 
-    if(range_size < 1000 * 60 * 60 * 24 * 10) {
+    if (range_size < 1000 * 60 * 60 * 24 * 10) {
         const formattedDate = date_obj.toLocaleString("en-GB", {
             month: "short",
             day: "numeric",
@@ -254,13 +254,17 @@ const MyChart = ({
                     fontFamily="Arial"
                     fontSize="10"
                     textAnchor="middle"
+                    pointerEvents="none"
                     fill="black">{
                         print_date(current_time, start_time, end_time)
                     }</text>
             </g>);
         } catch (e) { };
     }
-    console.log(navbar_dates)
+
+
+    let scroll_width = Math.max(Math.abs(x_pos_brush_1 - x_pos_brush_2), 10);
+    let scroll_x = Math.min(x_pos_brush_1, x_pos_brush_2) + Math.abs(x_pos_brush_1 - x_pos_brush_2) / 2 - scroll_width / 2;
 
     return (
         <div>
@@ -287,23 +291,33 @@ const MyChart = ({
                 </g>
 
 
-                <rect
+                <g
                     onMouseDown={(e) => {
                         e.stopPropagation();
-
                         set_x_origin_brush_1(e.clientX - x_pos_brush_1);
                         set_dragging_brush_1(true);
                         set_x_origin_brush_2(e.clientX - x_pos_brush_2);
                         set_dragging_brush_2(true);
                     }}
-
-                    x={Math.min(x_pos_brush_1, x_pos_brush_2)}
-                    y={NAVBAR_TOP}
-                    height={NAVBAR_HEIGHT}
-                    width={Math.abs(x_pos_brush_2 - x_pos_brush_1)}
-                    fill="rgba(0,0,0,0.2)"
-                    stroke="none"
-                />
+                >
+                    <rect
+                        x={scroll_x}
+                        y={NAVBAR_BOTTOM + 20}
+                        height={10}
+                        width={scroll_width}
+                        fill="rgba(0,0,0,0.2)"
+                        stroke="none"
+                        rx="5"
+                    />
+                    <rect
+                        x={Math.min(x_pos_brush_1, x_pos_brush_2)}
+                        y={NAVBAR_TOP}
+                        height={NAVBAR_HEIGHT}
+                        width={Math.abs(x_pos_brush_2 - x_pos_brush_1)}
+                        fill="rgba(0,0,0,0.2)"
+                        stroke="none"
+                    />
+                </g>
 
                 <g
                     onMouseDown={(e) => {
@@ -331,6 +345,14 @@ const MyChart = ({
                     />
                 </g>
                 {navbar_dates}
+
+                <line
+                    x1="0"
+                    x2={width}
+                    y1={MAIN_CHART_BOTTOM}
+                    y2={MAIN_CHART_BOTTOM}
+                    stroke="black"
+                />
             </svg>
         </div>
     );
