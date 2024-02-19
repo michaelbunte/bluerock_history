@@ -150,7 +150,7 @@ const MyChart = ({
         const handle_mouse_move = function (e) {
             e.stopPropagation();
             if (dragging_brush_1) {
-                set_x_pos_brush_1(Math.max(Math.min(e.clientX - x_origin_brush_1, width), 0));
+                set_x_pos_brush_1(e.clientX - x_origin_brush_1);
             }
         }
         const handle_mouse_up = function (e) {
@@ -175,7 +175,7 @@ const MyChart = ({
         const handle_mouse_move = function (e) {
             e.stopPropagation();
             if (dragging_brush_2) {
-                set_x_pos_brush_2(Math.max(Math.min(e.clientX - x_origin_brush_2, width), 0));
+                set_x_pos_brush_2(e.clientX - x_origin_brush_2);
             }
         }
         const handle_mouse_up = function (e) {
@@ -230,7 +230,7 @@ const MyChart = ({
     let last_index = find_target_time_index(brush_2_time, data);
     const main_chart_step_size = data.length / MAIN_CHART_RESOLUTION;
 
-    let main_chart_line_points = `${-1},${NAVBAR_BOTTOM} `;
+    let main_chart_line_points = `${time_to_main_chart_x(data[0][0])},${NAVBAR_BOTTOM} `;
     for (let i = first_index; i <= last_index + Math.max(main_chart_step_size, 2); i += main_chart_step_size) {
         try {
             let x_pos = time_to_main_chart_x(data[Math.floor(i)][0]);
@@ -238,7 +238,7 @@ const MyChart = ({
             main_chart_line_points += `${x_pos},${y_pos} `
         } catch (e) { }
     }
-    main_chart_line_points += `${width + 1},${NAVBAR_BOTTOM} `;
+    main_chart_line_points += `${time_to_main_chart_x(data[data.length-1][0])},${NAVBAR_BOTTOM} `;
 
     //========================================================================
     // Navbar Dates
