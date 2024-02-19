@@ -87,10 +87,16 @@ const MyChart = ({
         return mapRange(time, start_time, end_time, 0, width);
     }
 
+    let max = 0;
+    for (let i = 0; i < data.length; i += navbar_step_size) {
+        max = Math.max(data[Math.floor(i)][1], max);
+    }
+    console.log(max)
+
     let navbar_points = `0,${NAVBAR_HEIGHT} `;
     for (let i = 0; i < data.length; i += navbar_step_size) {
         let x_pos = time_to_navbar_x(data[Math.floor(i)][0]);
-        let y_pos = mapRange(data[Math.floor(i)][1], 0, 100, 0, NAVBAR_HEIGHT);
+        let y_pos = mapRange(data[Math.floor(i)][1], 0, max, 0, NAVBAR_HEIGHT);
         navbar_points += `${x_pos},${y_pos} `
     }
     navbar_points += `${width},${NAVBAR_HEIGHT}`;
