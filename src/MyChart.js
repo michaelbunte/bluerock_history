@@ -145,11 +145,20 @@ const MyChart = ({
                         stroke="black" />
                 </g>
 
-                <rect 
+                <rect
+                    onMouseDown={(e) => {
+                        e.stopPropagation();
+
+                        set_x_origin_brush_1(e.clientX - x_pos_brush_1);
+                        set_dragging_brush_1(true);
+                        set_x_origin_brush_2(e.clientX - x_pos_brush_2);
+                        set_dragging_brush_2(true);
+                    }}
+
                     x={Math.min(x_pos_brush_1, x_pos_brush_2)}
-                    y={height-NAVBAR_HEIGHT}
+                    y={height - NAVBAR_HEIGHT}
                     height={NAVBAR_HEIGHT}
-                    width={Math.abs(x_pos_brush_2-x_pos_brush_1)}
+                    width={Math.abs(x_pos_brush_2 - x_pos_brush_1)}
                     fill="rgba(0,0,0,0.2)"
                     stroke="none"
                 />
