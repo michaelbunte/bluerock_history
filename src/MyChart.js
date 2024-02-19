@@ -3,7 +3,9 @@ import { useState, useEffect } from 'react';
 
 const NAVBAR_HEIGHT = 50;
 const NAVBAR_RESOLUTION = 200;
-const MAIN_CHART_RESOLUTION = 1000;
+const MAIN_CHART_RESOLUTION = 4000;
+const DATE_SPACING_1_HEIGHT = 25;
+const DATE_SPACING_2_HEIGHT = 25;
 
 
 function mapRange(value, fromMin, fromMax, toMin, toMax) {
@@ -170,7 +172,7 @@ const MyChart = ({
     for(let i = first_index; i <= last_index + Math.max(main_chart_step_size, 2); i+=main_chart_step_size) {
         try {
             let x_pos = mapRange(data[Math.floor(i)][0], brush_1_time, brush_2_time, 0, width);
-            let y_pos = mapRange(data[Math.floor(i)][1], 0, max, 0, height - NAVBAR_HEIGHT);
+            let y_pos = mapRange(data[Math.floor(i)][1], 0, max, 0, height - NAVBAR_HEIGHT - DATE_SPACING_2_HEIGHT - DATE_SPACING_1_HEIGHT);
             main_chart_line_points += `${x_pos},${y_pos} `
         } catch(e) {}
     }
@@ -187,7 +189,7 @@ const MyChart = ({
                     stroke="none"
                     fill="lightgreen" />
 
-                <g transform={`translate(0, ${height - NAVBAR_HEIGHT})`}>
+                <g transform={`translate(0, ${height - NAVBAR_HEIGHT - DATE_SPACING_2_HEIGHT})`}>
                     <polyline
                         points={navbar_points}
                         fill="lightblue"
@@ -211,7 +213,7 @@ const MyChart = ({
                     }}
 
                     x={Math.min(x_pos_brush_1, x_pos_brush_2)}
-                    y={height - NAVBAR_HEIGHT}
+                    y={height - NAVBAR_HEIGHT - DATE_SPACING_2_HEIGHT}
                     height={NAVBAR_HEIGHT}
                     width={Math.abs(x_pos_brush_2 - x_pos_brush_1)}
                     fill="rgba(0,0,0,0.2)"
@@ -227,7 +229,7 @@ const MyChart = ({
                 >
                     <Brush
                         x_pos={x_pos_brush_1}
-                        y_pos={height - NAVBAR_HEIGHT}
+                        y_pos={height - NAVBAR_HEIGHT - DATE_SPACING_2_HEIGHT}
                     />
                 </g>
 
@@ -240,7 +242,7 @@ const MyChart = ({
                 >
                     <Brush
                         x_pos={x_pos_brush_2}
-                        y_pos={height - NAVBAR_HEIGHT}
+                        y_pos={height - NAVBAR_HEIGHT - DATE_SPACING_2_HEIGHT}
                     />
                 </g>
             </svg>
