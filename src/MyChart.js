@@ -282,7 +282,7 @@ const MyChart = ({
                     fontFamily="Arial"
                     fontSize="10"
                     textAnchor="middle"
-                    pointerEvents="none"
+                    userSelect="none"
                     fill="black">{
                         print_date(current_time, start_time, end_time)
                     }</text>
@@ -317,6 +317,7 @@ const MyChart = ({
                 fontSize="10"
                 textAnchor="middle"
                 pointerEvents="none"
+                userSelect="none"
                 fill="black">{
                     print_date(i, brush_1_time, brush_2_time)
                 }</text>
@@ -332,7 +333,7 @@ const MyChart = ({
     //========================================================================
     // Horizontal Chart Lines
     let horizontal_lines = [];
-    for(let i = MAIN_CHART_BOTTOM; i > MAIN_CHART_TOP; i -= MAIN_CHART_VALUE_SPACING_HEIGHT) {
+    for (let i = MAIN_CHART_BOTTOM; i > MAIN_CHART_TOP; i -= MAIN_CHART_VALUE_SPACING_HEIGHT) {
         horizontal_lines.push(<g
             transform={`translate(${0},${i})`}
         >
@@ -344,7 +345,7 @@ const MyChart = ({
                 stroke="rgba(0,0,0,0.2)"
                 strokeWidth="1px"
             />
-             <text
+            <text
                 paintOrder="stroke"
                 strokeWidth="2px"
                 stroke="white"
@@ -353,14 +354,43 @@ const MyChart = ({
                 fontFamily="Arial"
                 fontSize="10"
                 textAnchor="left"
-                pointerEvents="none"
+                userSelect="none"
                 fill="black">{
                     main_chart_y_to_value(i).toPrecision(3)
                 }</text>
         </g>)
     }
 
+    //========================================================================
+    // Vertical Line
+    let [show_vertical_line, set_show_vertical_line] = useState(true);
+    let vertical_line = show_vertical_line && <g>
+        <line
+            y1={MAIN_CHART_TOP}
+            y2={MAIN_CHART_BOTTOM}
+            x1={width / 2}
+            x2={width / 2}
+            stroke="white"
+            strokeWidth="5px"
+        />
+        <line
+            y1={MAIN_CHART_TOP}
+            y2={MAIN_CHART_BOTTOM}
+            x1={width / 2}
+            x2={width / 2}
+            stroke="red"
+            strokeWidth="2px"
+        />
+    </g>
 
+    let vertical_line_time = new Date(main_chart_x_to_time(width / 2)).toLocaleString("en-GB", {
+        day: "numeric",
+        month: "short",
+        year: "numeric",
+        hour: "numeric",
+        minute: "2-digit",
+        second: "2-digit"
+    });
     return (
         <div>
             <svg width={width} height={height} xmlns="http://www.w3.org/2000/svg">
@@ -450,6 +480,35 @@ const MyChart = ({
                 </g>
                 {navbar_dates}
                 {main_chart_dates}
+                <text
+                    x="15"
+                    y="17"
+                    fontFamily="Arial"
+                    fontSize="10"
+                    textAnchor="start"
+                    pointerEvents="none"
+                    userSelect="none"
+                    fill="black">{vertical_line_time}</text>
+                <rect
+                    onClick={()=>{set_show_vertical_line(prev=>!prev);}}
+                    x={width-60}
+                    y="7"
+                    width="100"
+                    height="13"
+                    fill="rgba(0,0,0,0)"
+                />
+                
+                <text
+                    x={width - 15}
+                    y="17"
+                    fontFamily="Arial"
+                    fontSize="10"
+                    textAnchor="end"
+                    pointerEvents="none"
+                    userSelect="none"
+                    fill="black"> {show_vertical_line ? "hide line" : "show line"}</text>
+                {horizontal_lines}
+                {vertical_line}
                 <line
                     x1="0"
                     x2={width}
@@ -457,15 +516,6 @@ const MyChart = ({
                     y2={MAIN_CHART_BOTTOM}
                     stroke="black"
                 />
-                <text
-                    x="15"
-                    y="17"
-                    fontFamily="Arial"
-                    fontSize="10"
-                    textAnchor="left"
-                    pointerEvents="none"
-                    fill="black">HELLO</text>
-                {horizontal_lines}
             </svg>
         </div>
     );
