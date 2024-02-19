@@ -491,7 +491,7 @@ const MyChart = ({
                     fill="black">{vertical_line_time}</text>
                 <rect
                     onClick={()=>{set_show_vertical_line(prev=>!prev);}}
-                    x={width-60}
+                    x={width-90}
                     y="7"
                     width="100"
                     height="13"
@@ -506,7 +506,7 @@ const MyChart = ({
                     textAnchor="end"
                     pointerEvents="none"
                     userSelect="none"
-                    fill="black"> {show_vertical_line ? "hide line" : "show line"}</text>
+                    fill="black"> {show_vertical_line ? "hide center line" : "show center line"}</text>
                 {horizontal_lines}
                 {vertical_line}
                 <line
