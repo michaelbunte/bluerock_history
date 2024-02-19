@@ -88,6 +88,30 @@ const MyChart = ({
     }, [x_pos_brush_1, dragging_brush_1, x_origin_brush_1]);
 
 
+    const [dragging_brush_2, set_dragging_brush_2] = useState(false);
+    const [x_origin_brush_2, set_x_origin_brush_2] = useState(0);
+    const [x_pos_brush_2, set_x_pos_brush_2] = useState(200);
+    useEffect(() => {
+        const handle_mouse_move = function (e) {
+            e.stopPropagation();
+            if (dragging_brush_2) {
+                set_x_pos_brush_2(e.clientX - x_origin_brush_2)
+            }
+        }
+        const handle_mouse_up = function (e) {
+            e.stopPropagation()
+            set_dragging_brush_2(false);
+        }
+        window.addEventListener('mousemove', handle_mouse_move);
+        window.addEventListener('mouseup', handle_mouse_up);
+
+        return () => {
+            window.removeEventListener('mousemove', handle_mouse_move);
+            window.removeEventListener('mouseup', handle_mouse_up);
+        };
+    }, [x_pos_brush_2, dragging_brush_2, x_origin_brush_2]);
+
+
 
     let max = 0;
     for (let i = 0; i < data.length; i += navbar_step_size) {
@@ -121,6 +145,15 @@ const MyChart = ({
                         stroke="black" />
                 </g>
 
+                <rect 
+                    x={Math.min(x_pos_brush_1, x_pos_brush_2)}
+                    y={height-NAVBAR_HEIGHT}
+                    height={NAVBAR_HEIGHT}
+                    width={Math.abs(x_pos_brush_2-x_pos_brush_1)}
+                    fill="rgba(0,0,0,0.2)"
+                    stroke="none"
+                />
+
                 <g
                     onMouseDown={(e) => {
                         e.stopPropagation();
@@ -130,6 +163,19 @@ const MyChart = ({
                 >
                     <Brush
                         x_pos={x_pos_brush_1}
+                        y_pos={height - NAVBAR_HEIGHT}
+                    />
+                </g>
+
+                <g
+                    onMouseDown={(e) => {
+                        e.stopPropagation();
+                        set_x_origin_brush_2(e.clientX - x_pos_brush_2);
+                        set_dragging_brush_2(true);
+                    }}
+                >
+                    <Brush
+                        x_pos={x_pos_brush_2}
                         y_pos={height - NAVBAR_HEIGHT}
                     />
                 </g>
