@@ -344,6 +344,19 @@ const MyChart = ({
                 stroke="rgba(0,0,0,0.2)"
                 strokeWidth="1px"
             />
+             <text
+                paintOrder="stroke"
+                strokeWidth="2px"
+                stroke="white"
+                x="3"
+                y="-1"
+                fontFamily="Arial"
+                fontSize="10"
+                textAnchor="left"
+                pointerEvents="none"
+                fill="black">{
+                    main_chart_y_to_value(i).toPrecision(3)
+                }</text>
         </g>)
     }
 
