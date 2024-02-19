@@ -395,31 +395,6 @@ const MyChart = ({
     //========================================================================
     // Selectable Chart Logic
 
-    /*
-        const [dragging_brush_1, set_dragging_brush_1] = useState(false);
-        const [x_origin_brush_1, set_x_origin_brush_1] = useState(0);
-        const [x_pos_brush_1, set_x_pos_brush_1] = useState(100);
-        useEffect(() => {
-            const handle_mouse_move = function (e) {
-                e.stopPropagation();
-                if (dragging_brush_1) {
-                    set_x_pos_brush_1(e.clientX - x_origin_brush_1);
-                }
-            }
-            const handle_mouse_up = function (e) {
-                e.stopPropagation()
-                set_dragging_brush_1(false);
-            }
-            window.addEventListener('mousemove', handle_mouse_move);
-            window.addEventListener('mouseup', handle_mouse_up);
-    
-            return () => {
-                window.removeEventListener('mousemove', handle_mouse_move);
-                window.removeEventListener('mouseup', handle_mouse_up);
-            };
-        }, [x_pos_brush_1, dragging_brush_1, x_origin_brush_1]);
-    */
-
     const [dragging_box, set_dragging_box] = useState(false);
     const [x_pos_box_curr, set_x_pos_box_curr] = useState(100);
     const [x_pos_box_start, set_x_pos_box_start] = useState(100);
@@ -428,11 +403,23 @@ const MyChart = ({
             e.stopPropagation();
             if (dragging_box) {
                 set_x_pos_box_curr(e.clientX);
+                console.log("1")
             }
+
         }
         const handle_mouse_up = function (e) {
             e.stopPropagation();
-            set_dragging_box(false);
+            if(dragging_box) {
+                let min_pos = Math.min(x_pos_box_curr, x_pos_box_start);
+                let max_pos = Math.max(x_pos_box_curr, x_pos_box_start);
+                
+                let min_pos_time = main_chart_x_to_time(min_pos);
+                let max_pos_time = main_chart_x_to_time(max_pos);
+                
+                set_x_pos_brush_1(time_to_navbar_x(min_pos_time));
+                set_x_pos_brush_2(time_to_navbar_x(max_pos_time));
+                set_dragging_box(false);
+            }
         }
         window.addEventListener('mousemove', handle_mouse_move);
         window.addEventListener('mouseup', handle_mouse_up);
@@ -449,6 +436,7 @@ const MyChart = ({
             set_dragging_box(true);
             set_x_pos_box_curr(e.clientX);
             set_x_pos_box_start(e.clientX);
+            console.log("3")
         }}
         x="0"
         y={MAIN_CHART_TOP}
@@ -465,7 +453,6 @@ const MyChart = ({
         fill="rgba(0,0,0,0.2)"
     />
 
-    console.log(x_pos_box_curr);
 
     return (
         <div>
