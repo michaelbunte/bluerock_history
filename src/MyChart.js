@@ -138,7 +138,7 @@ const MyChart = ({
     set_x_pos_brush_1,
     set_x_pos_brush_2
 }) => {
-
+    const eleSvg = document.querySelector('svg');
     const NAVBAR_BOTTOM = height - DATE_SPACING_2_HEIGHT;
     const NAVBAR_TOP = height - DATE_SPACING_2_HEIGHT - NAVBAR_HEIGHT;
     const MAIN_CHART_BOTTOM = height - DATE_SPACING_2_HEIGHT - NAVBAR_HEIGHT - DATE_SPACING_1_HEIGHT;
@@ -412,7 +412,10 @@ const MyChart = ({
         const handle_mouse_move = function (e) {
             e.stopPropagation();
             if (dragging_box) {
-                set_x_pos_box_curr(e.clientX);
+                let point = eleSvg.createSVGPoint();
+                point.x = e.clientX; // 249
+                point = point.matrixTransform(eleSvg.getScreenCTM().inverse());
+                set_x_pos_box_curr(point.x);
             }
 
         }
@@ -446,9 +449,12 @@ const MyChart = ({
 
     const on_center_rect_click = (e) => {
         e.stopPropagation();
+        let point = eleSvg.createSVGPoint();
+        point.x = e.clientX; // 249
+        point = point.matrixTransform(eleSvg.getScreenCTM().inverse());
         set_dragging_box(true);
-        set_x_pos_box_curr(e.clientX);
-        set_x_pos_box_start(e.clientX);
+        set_x_pos_box_curr(point.x);
+        set_x_pos_box_start(point.x);
     };
 
     let highlight_rect = dragging_box && <rect

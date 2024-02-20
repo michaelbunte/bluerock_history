@@ -23,7 +23,8 @@ function App() {
   }, [x_pos_brush_1, x_pos_brush_2, ticking])
 
   return (
-    <div>
+    <div style={{paddingLeft: "100px"}}>
+
       <MyChart
         data={data}
         width={700}
