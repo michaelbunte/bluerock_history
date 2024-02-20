@@ -664,9 +664,9 @@ const MyChart = ({
                     pointerEvents="none"
                     userSelect="none"
                     fill="black">{title}</text>
+                {hovered_point}
                 {clickable_rect}
                 {highlight_rect}
-                {hovered_point}
             </svg>
         </div>
     );
