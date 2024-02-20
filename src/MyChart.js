@@ -137,7 +137,7 @@ const MyChart = ({
     x_pos_brush_2,
     set_x_pos_brush_1,
     set_x_pos_brush_2,
-    on_final_window_resize=()=>{console.log("resizing")}
+    on_final_window_resize=()=>{}
 }) => {
     const eleSvg = document.querySelector('svg');
     const NAVBAR_BOTTOM = height - DATE_SPACING_2_HEIGHT;
