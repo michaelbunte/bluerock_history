@@ -129,7 +129,8 @@ const Brush = ({
 const MyChart = ({
     height,
     width,
-    data
+    data,
+    title = ""
 }) => {
 
     const NAVBAR_BOTTOM = height - DATE_SPACING_2_HEIGHT;
@@ -151,7 +152,7 @@ const MyChart = ({
     useEffect(() => {
         const handle_mouse_move = function (e) {
             e.stopPropagation();
-            if (dragging_brush_1) {
+            if (dragging_brush_1 && e.clientX - x_origin_brush_1 < x_pos_brush_2) {
                 set_x_pos_brush_1(e.clientX - x_origin_brush_1);
             }
         }
@@ -176,7 +177,7 @@ const MyChart = ({
     useEffect(() => {
         const handle_mouse_move = function (e) {
             e.stopPropagation();
-            if (dragging_brush_2) {
+            if (dragging_brush_2 && e.clientX - x_origin_brush_2 > x_pos_brush_1) {
                 set_x_pos_brush_2(e.clientX - x_origin_brush_2);
             }
         }
@@ -282,6 +283,7 @@ const MyChart = ({
                     fontFamily="Arial"
                     fontSize="10"
                     textAnchor="middle"
+                    pointerEvents="none"
                     userSelect="none"
                     fill="black">{
                         print_date(current_time, start_time, end_time)
@@ -366,7 +368,7 @@ const MyChart = ({
     let [show_vertical_line, set_show_vertical_line] = useState(true);
     let vertical_line = show_vertical_line && <g>
         <line
-            y1={MAIN_CHART_TOP}
+            y1={MAIN_CHART_TOP + 5}
             y2={MAIN_CHART_BOTTOM}
             x1={width / 2}
             x2={width / 2}
@@ -374,7 +376,7 @@ const MyChart = ({
             strokeWidth="5px"
         />
         <line
-            y1={MAIN_CHART_TOP}
+            y1={MAIN_CHART_TOP + 5}
             y2={MAIN_CHART_BOTTOM}
             x1={width / 2}
             x2={width / 2}
@@ -650,6 +652,15 @@ const MyChart = ({
                     y2={MAIN_CHART_BOTTOM}
                     stroke="black"
                 />
+                <text
+                    x={width/2}
+                    y="17"
+                    fontFamily="Arial"
+                    fontSize="13"
+                    textAnchor="middle"
+                    pointerEvents="none"
+                    userSelect="none"
+                    fill="black">{title}</text>
                 {clickable_rect}
                 {highlight_rect}
                 {hovered_point}

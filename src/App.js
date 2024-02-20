@@ -14,6 +14,7 @@ function App() {
         data={data}
         width={700}
         height={400}
+        title="this is an example title"
       />
     </div>
 
