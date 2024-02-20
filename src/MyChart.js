@@ -101,7 +101,8 @@ function find_target_time_index(target_time, data) {
 
 const Brush = ({
     x_pos,
-    y_pos
+    y_pos,
+    screenWidth
 }) => {
     return <g>
         <line
@@ -113,7 +114,7 @@ const Brush = ({
             strokeWidth="4"
             stroke="black" />
         <rect
-            x={x_pos - 5}
+            x={Math.min(Math.max(x_pos - 5, 0), screenWidth - 11)}
             y={y_pos + NAVBAR_HEIGHT / 4}
             width={10}
             height={NAVBAR_HEIGHT / 2}
@@ -580,6 +581,7 @@ const MyChart = ({
                     <Brush
                         x_pos={x_pos_brush_1}
                         y_pos={NAVBAR_TOP}
+                        screenWidth={width}
                     />
                 </g>
 
@@ -593,6 +595,7 @@ const MyChart = ({
                     <Brush
                         x_pos={x_pos_brush_2}
                         y_pos={NAVBAR_TOP}
+                        screenWidth={width}
                     />
                 </g>
                 {navbar_dates}
