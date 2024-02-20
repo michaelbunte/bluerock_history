@@ -132,6 +132,7 @@ const MyChart = ({
     width,
     data,
     title = "",
+    loading = false,
     x_pos_brush_1,
     x_pos_brush_2,
     set_x_pos_brush_1,
@@ -671,6 +672,25 @@ const MyChart = ({
                 {hovered_point}
                 {clickable_rect}
                 {highlight_rect}
+                {loading && <g>
+                    <rect
+                        x="0"
+                        y="0"
+                        width={width}
+                        height={height}
+                        fill="rgba(0,0,0,0.2)"
+                    />
+                    <text
+                        x={width/2}
+                        y={height/2}
+                        textAnchor="middle"
+                        fontWeight="bold"
+                        fontSize="2rem"
+                        fill="rgba(0,0,0,0.6)"
+                    >
+                        LOADING
+                    </text>
+                </g>}
             </svg>
         </div>
     );
