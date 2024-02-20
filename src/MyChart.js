@@ -237,11 +237,11 @@ const MyChart = ({
         return mapRange(x, 0, width, brush_1_time, brush_2_time);
     }
     const main_chart_y_to_value = (y) => {
-        return mapRange(y, MAIN_CHART_BOTTOM, MAIN_CHART_TOP, 0, local_chart_max);
+        return mapRange(y, MAIN_CHART_BOTTOM, MAIN_CHART_TOP, 0, local_chart_max * 1.1);
     }
 
     const main_chart_value_to_y = (value) => {
-        return mapRange(value, 0, local_chart_max, MAIN_CHART_BOTTOM, MAIN_CHART_TOP);
+        return mapRange(value, 0, local_chart_max * 1.1, MAIN_CHART_BOTTOM, MAIN_CHART_TOP);
     }
 
 
@@ -454,33 +454,50 @@ const MyChart = ({
     //========================================================================
     // Highlight closest point
 
-    
+    const [hovered_point_text, set_hovered_point_text] = useState("");
+
     const on_center_rect_hover = (e) => {
-        let hovered_time = main_chart_x_to_time(e.clientX);
-        let chosen_index = find_target_time_index(hovered_time, data)
-        let new_x_pos_1 = time_to_main_chart_x(data[chosen_index][0]);
-        let new_y_pos_1 = main_chart_value_to_y(data[chosen_index][1]);
+        try {
+            let hovered_time = main_chart_x_to_time(e.clientX);
+            let chosen_index = find_target_time_index(hovered_time, data)
+            let new_x_pos_1 = time_to_main_chart_x(data[chosen_index][0]);
+            let new_y_pos_1 = main_chart_value_to_y(data[chosen_index][1]);
 
-        let new_x_pos_2 = time_to_main_chart_x(data[chosen_index + 1][0]);
-        let new_y_pos_2 = main_chart_value_to_y(data[chosen_index + 1][1]);
+            let new_x_pos_2 = time_to_main_chart_x(data[chosen_index + 1][0]);
+            let new_y_pos_2 = main_chart_value_to_y(data[chosen_index + 1][1]);
 
 
-        if(Math.abs(new_x_pos_1 - e.clientX) < Math.abs(new_x_pos_2 - e.clientX)) {
-            set_hovered_point_pos([new_x_pos_1, new_y_pos_1]);
-        } else {
-            set_hovered_point_pos([new_x_pos_2, new_y_pos_2]);
-        }
+            if (Math.abs(new_x_pos_1 - e.clientX) < Math.abs(new_x_pos_2 - e.clientX)) {
+                set_hovered_point_pos([new_x_pos_1, new_y_pos_1]);
+                set_hovered_point_text(data[chosen_index][1]);
+            } else {
+                set_hovered_point_pos([new_x_pos_2, new_y_pos_2]);
+                set_hovered_point_text(data[chosen_index + 1][1]);
+            }
+        } catch (e) { }
     }
 
 
     const hovered_point = <g transform={`translate(${hovered_point_pos[0]},${hovered_point_pos[1]})`}>
         <circle cx={0} cy={0} r="3" />
+        <text
+            paintOrder="stroke"
+            strokeWidth="2px"
+            stroke="white"
+            x="0"
+            y="-5"
+            fontFamily="Arial"
+            fontSize="10"
+            textAnchor="middle"
+            pointerEvents="none"
+            userSelect="none"
+            fill="black">{hovered_point_text}</text>
     </g>
 
     let clickable_rect = <rect
         onMouseDown={on_center_rect_click}
         onMouseMove={on_center_rect_hover}
-        onMouseLeave={()=>set_hovered_point_pos([-100,-100])}
+        onMouseLeave={() => set_hovered_point_pos([-100, -100])}
         x="0"
         y={MAIN_CHART_TOP}
         width={width}
