@@ -15,6 +15,8 @@ function App() {
         width={700}
         height={400}
         title="this is an example title"
+        left_time={1613404851000}
+        right_time={1613404938000}
       />
     </div>
 
