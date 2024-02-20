@@ -607,21 +607,40 @@ const MyChart = ({
                 <rect
                     onClick={() => { set_show_vertical_line(prev => !prev); }}
                     x={width - 90}
+                    rx="3"
                     y="7"
-                    width="100"
+                    width="90"
                     height="13"
-                    fill="rgba(0,0,0,0)"
+                    fill="rgba(0,0,0,.1)"
                 />
-
                 <text
-                    x={width - 15}
+                    x={width - 44}
                     y="17"
                     fontFamily="Arial"
                     fontSize="10"
-                    textAnchor="end"
+                    textAnchor="middle"
                     pointerEvents="none"
                     userSelect="none"
                     fill="black"> {show_vertical_line ? "hide center line" : "show center line"}</text>
+                <rect
+                    onClick={() => { set_x_pos_brush_1(0); set_x_pos_brush_2(width); }}
+                    x={width - 150}
+                    rx="3"
+                    y="7"
+                    width="50"
+                    height="13"
+                    fill="rgba(0,0,0,.1)"
+                />
+                <text
+                    x={width - 125}
+                    y="17"
+                    fontFamily="Arial"
+                    fontSize="10"
+                    textAnchor="middle"
+                    pointerEvents="none"
+                    userSelect="none"
+                    fill="black">reset</text>
+
                 {horizontal_lines}
                 {vertical_line}
                 <line
