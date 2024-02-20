@@ -131,7 +131,11 @@ const MyChart = ({
     height,
     width,
     data,
-    title = ""
+    title = "",
+    x_pos_brush_1,
+    x_pos_brush_2,
+    set_x_pos_brush_1,
+    set_x_pos_brush_2
 }) => {
 
     const NAVBAR_BOTTOM = height - DATE_SPACING_2_HEIGHT;
@@ -152,7 +156,6 @@ const MyChart = ({
     const [dragging_brush_1, set_dragging_brush_1] = useState(false);
     const [x_origin_brush_1, set_x_origin_brush_1] = useState(0);
 
-    const [x_pos_brush_1, set_x_pos_brush_1] = useState(100);
     useEffect(() => {
         const handle_mouse_move = function (e) {
             e.stopPropagation();
@@ -178,7 +181,6 @@ const MyChart = ({
     const [dragging_brush_2, set_dragging_brush_2] = useState(false);
     const [x_origin_brush_2, set_x_origin_brush_2] = useState(0);
 
-    const [x_pos_brush_2, set_x_pos_brush_2] = useState(200);
     useEffect(() => {
         const handle_mouse_move = function (e) {
             e.stopPropagation();
