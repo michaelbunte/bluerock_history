@@ -20,10 +20,32 @@ function App() {
       <MyChart
         data={data}
         width={700}
-        height={400}
+        height={300}
         title="this is an example title"
-        left_time={left_time}
-        right_time={left_time + 87000}
+      />
+      <MyChart
+        data={data}
+        width={700}
+        height={300}
+        title="this is an example title"
+      />
+      <MyChart
+        data={data}
+        width={700}
+        height={300}
+        title="this is an example title"
+      />
+      <MyChart
+        data={data}
+        width={700}
+        height={300}
+        title="this is an example title"
+      />
+      <MyChart
+        data={data}
+        width={700}
+        height={300}
+        title="this is an example title"
       />
     </div>
 

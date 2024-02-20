@@ -131,15 +131,13 @@ const MyChart = ({
     height,
     width,
     data,
-    title = "",
-    left_time = undefined,
-    right_time = undefined
+    title = ""
 }) => {
 
     const NAVBAR_BOTTOM = height - DATE_SPACING_2_HEIGHT;
     const NAVBAR_TOP = height - DATE_SPACING_2_HEIGHT - NAVBAR_HEIGHT;
     const MAIN_CHART_BOTTOM = height - DATE_SPACING_2_HEIGHT - NAVBAR_HEIGHT - DATE_SPACING_1_HEIGHT;
-    
+
     const start_time = data[0][0];
     const end_time = data[data.length - 1][0];
     const time_to_navbar_x = (time) => {
@@ -154,8 +152,7 @@ const MyChart = ({
     const [dragging_brush_1, set_dragging_brush_1] = useState(false);
     const [x_origin_brush_1, set_x_origin_brush_1] = useState(0);
 
-    const left_time_v = left_time === undefined ? data[0][0] : left_time;
-    const [x_pos_brush_1, set_x_pos_brush_1] = useState(time_to_navbar_x(left_time_v));
+    const [x_pos_brush_1, set_x_pos_brush_1] = useState(100);
     useEffect(() => {
         const handle_mouse_move = function (e) {
             e.stopPropagation();
@@ -181,8 +178,7 @@ const MyChart = ({
     const [dragging_brush_2, set_dragging_brush_2] = useState(false);
     const [x_origin_brush_2, set_x_origin_brush_2] = useState(0);
 
-    const right_time_v = right_time === undefined ? data[data.length - 1][0] : right_time;
-    const [x_pos_brush_2, set_x_pos_brush_2] = useState(time_to_navbar_x(right_time_v));
+    const [x_pos_brush_2, set_x_pos_brush_2] = useState(200);
     useEffect(() => {
         const handle_mouse_move = function (e) {
             e.stopPropagation();
@@ -662,7 +658,7 @@ const MyChart = ({
                     stroke="black"
                 />
                 <text
-                    x={width/2}
+                    x={width / 2}
                     y="17"
                     fontFamily="Arial"
                     fontSize="13"
