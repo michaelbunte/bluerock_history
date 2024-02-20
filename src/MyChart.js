@@ -136,7 +136,8 @@ const MyChart = ({
     x_pos_brush_1,
     x_pos_brush_2,
     set_x_pos_brush_1,
-    set_x_pos_brush_2
+    set_x_pos_brush_2,
+    on_final_window_resize=()=>{console.log("resizing")}
 }) => {
     const eleSvg = document.querySelector('svg');
     const NAVBAR_BOTTOM = height - DATE_SPACING_2_HEIGHT;
@@ -150,6 +151,13 @@ const MyChart = ({
     }
     const navbar_x_to_time = (time) => {
         return mapRange(time, 0, width, start_time, end_time);
+    }
+
+    const convert_world_to_svg_coord = (client_x_pos) => {
+        let point = eleSvg.createSVGPoint();
+        point.x = client_x_pos; // 249
+        point = point.matrixTransform(eleSvg.getScreenCTM().inverse());
+        return point.x;
     }
 
     //========================================================================
@@ -167,6 +175,7 @@ const MyChart = ({
         const handle_mouse_up = function (e) {
             e.stopPropagation()
             set_dragging_brush_1(false);
+            on_final_window_resize();
         }
         window.addEventListener('mousemove', handle_mouse_move);
         window.addEventListener('mouseup', handle_mouse_up);
@@ -412,10 +421,7 @@ const MyChart = ({
         const handle_mouse_move = function (e) {
             e.stopPropagation();
             if (dragging_box) {
-                let point = eleSvg.createSVGPoint();
-                point.x = e.clientX; // 249
-                point = point.matrixTransform(eleSvg.getScreenCTM().inverse());
-                set_x_pos_box_curr(point.x);
+                set_x_pos_box_curr(convert_world_to_svg_coord(e.clientX));
             }
 
         }
@@ -449,12 +455,10 @@ const MyChart = ({
 
     const on_center_rect_click = (e) => {
         e.stopPropagation();
-        let point = eleSvg.createSVGPoint();
-        point.x = e.clientX; // 249
-        point = point.matrixTransform(eleSvg.getScreenCTM().inverse());
+        let client_x_pos = convert_world_to_svg_coord(e.clientX);
         set_dragging_box(true);
-        set_x_pos_box_curr(point.x);
-        set_x_pos_box_start(point.x);
+        set_x_pos_box_curr(client_x_pos);
+        set_x_pos_box_start(client_x_pos);
     };
 
     let highlight_rect = dragging_box && <rect
@@ -472,7 +476,9 @@ const MyChart = ({
 
     const on_center_rect_hover = (e) => {
         try {
-            let hovered_time = main_chart_x_to_time(e.clientX);
+            let client_x_pos = convert_world_to_svg_coord(e.clientX);
+
+            let hovered_time = main_chart_x_to_time(client_x_pos);
             let chosen_index = find_target_time_index(hovered_time, data)
             let new_x_pos_1 = time_to_main_chart_x(data[chosen_index][0]);
             let new_y_pos_1 = main_chart_value_to_y(data[chosen_index][1]);
@@ -481,7 +487,7 @@ const MyChart = ({
             let new_y_pos_2 = main_chart_value_to_y(data[chosen_index + 1][1]);
 
 
-            if (Math.abs(new_x_pos_1 - e.clientX) < Math.abs(new_x_pos_2 - e.clientX)) {
+            if (Math.abs(new_x_pos_1 - e.clientX) < Math.abs(new_x_pos_2 - client_x_pos)) {
                 set_hovered_point_pos([new_x_pos_1, new_y_pos_1]);
                 set_hovered_point_text(data[chosen_index][1]);
             } else {
