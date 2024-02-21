@@ -14,14 +14,17 @@ function App() {
       let response = await fetch(fetch_string);
       let response_json = await response.json();
       set_data(response_json);
-      console.log(response_json);
+      let filtered_response = response_json.filter((value)=>{
+        return !((value[0] < 16134048010000 && value[0] > 0) &&  (value[1] < 16134048010000 && value[0] > -1000000000))
+      })
+      console.log(filtered_response)
     }
     fetch_data();
   },[])
 
 
-  const [x_pos_brush_1, set_x_pos_brush_1] = useState(1613404801000);
-  const [x_pos_brush_2, set_x_pos_brush_2] = useState(1613404929000);
+  const [x_pos_brush_1, set_x_pos_brush_1] = useState(1611296444000);
+  const [x_pos_brush_2, set_x_pos_brush_2] = useState(1613974844000);
 
   const [ticking, setTicking] = useState(true);
 
@@ -35,7 +38,7 @@ function App() {
   }, [x_pos_brush_1, x_pos_brush_2, ticking])
 
   return (
-    <div style={{ paddingLeft: "100px" }}>
+    <div style={{ padding: "100px" }}>
 
       <MyChart
         data={data}

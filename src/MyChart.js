@@ -2,7 +2,7 @@ import React from 'react';
 import { useState, useEffect } from 'react';
 
 const NAVBAR_HEIGHT = 50;
-const NAVBAR_RESOLUTION = 200;
+const NAVBAR_RESOLUTION = 1000;
 const MAIN_CHART_RESOLUTION = 4000;
 const DATE_SPACING_1_HEIGHT = 25;
 const DATE_SPACING_2_HEIGHT = 30;
@@ -12,10 +12,12 @@ const MAIN_CHART_VALUE_SPACING_HEIGHT = 50;
 const MAIN_CHART_TOP = 20;
 
 
-function mapRange(value, fromMin, fromMax, toMin, toMax, clamped = false) {
+function mapRange(value, fromMin, fromMax, toMin, toMax, clamp = false) {
     // Ensure the input value is within the source range
-    const clampedValue = clamped ? Math.min(Math.max(value, fromMin), fromMax)
+    const clampedValue = clamp ? Math.min(Math.max(value, fromMin), fromMax)
         : value;
+
+    if(fromMax == fromMin) { return toMin; }
 
     // Calculate the percentage of the input value within the source range
     const percentage = (clampedValue - fromMin) / (fromMax - fromMin);
@@ -170,8 +172,8 @@ const MyChart = ({
     useEffect(() => {
         const handle_mouse_move = function (e) {
             e.stopPropagation();
-            if (dragging_brush_1 && e.clientX - x_origin_brush_1 < x_pos_brush_2) {
-                set_x_pos_brush_1(e.clientX - x_origin_brush_1);
+            if (dragging_brush_1 && e.clientX - x_origin_brush_1 < time_to_navbar_x(x_pos_brush_2)) {
+                set_x_pos_brush_1(navbar_x_to_time(e.clientX - x_origin_brush_1));
             }
         }
         const handle_mouse_up = function (e) {
@@ -196,8 +198,8 @@ const MyChart = ({
     useEffect(() => {
         const handle_mouse_move = function (e) {
             e.stopPropagation();
-            if (dragging_brush_2 && e.clientX - x_origin_brush_2 > x_pos_brush_1) {
-                set_x_pos_brush_2(e.clientX - x_origin_brush_2);
+            if (dragging_brush_2 && e.clientX - x_origin_brush_2 > time_to_navbar_x(x_pos_brush_1)) {
+                set_x_pos_brush_2(navbar_x_to_time(e.clientX - x_origin_brush_2));
             }
         }
         const handle_mouse_up = function (e) {
@@ -224,18 +226,21 @@ const MyChart = ({
     }
 
     let navbar_points = `0,${NAVBAR_HEIGHT} `;
-    for (let i = 0; i < data.length; i += navbar_step_size) {
-        let x_pos = time_to_navbar_x(data[Math.floor(i)][0]);
-        let y_pos = mapRange(data[Math.floor(i)][1], 0, navbar_max, NAVBAR_HEIGHT, 0);
-        navbar_points += `${x_pos},${y_pos} `
+    for (let t = start_time; t < end_time; t += (end_time - start_time) / NAVBAR_RESOLUTION) {
+        try {
+            let target_index = find_target_time_index(t, data);
+            let x_pos = time_to_navbar_x(data[target_index][0]);
+            let y_pos = mapRange(data[target_index][1], 0, navbar_max, NAVBAR_HEIGHT, 0, true);
+            navbar_points += `${x_pos},${y_pos} `
+        } catch(e){}
     }
     navbar_points += `${width},${NAVBAR_HEIGHT}`;
 
 
     //========================================================================
     // Main Chart Polyline
-    let brush_1_time = navbar_x_to_time(x_pos_brush_1);
-    let brush_2_time = navbar_x_to_time(x_pos_brush_2);
+    let brush_1_time = x_pos_brush_1;
+    let brush_2_time = x_pos_brush_2;
     let first_index = find_target_time_index(brush_1_time, data);
     let last_index = find_target_time_index(brush_2_time, data);
     const main_chart_step_size = data.length / MAIN_CHART_RESOLUTION;
@@ -259,12 +264,11 @@ const MyChart = ({
     }
 
     const main_chart_value_to_y = (value) => {
-        return mapRange(value, 0, local_chart_max * 1.1, MAIN_CHART_BOTTOM, MAIN_CHART_TOP);
+        return mapRange(value, 0, local_chart_max * 1.1, MAIN_CHART_BOTTOM, MAIN_CHART_TOP, true);
     }
 
 
     let main_chart_line_points = `${time_to_main_chart_x(data[0][0])},${NAVBAR_BOTTOM} `;
-    let b = 0;
     for (let i = first_index; i <= last_index + Math.max(main_chart_step_size, 2); i += main_chart_step_size) {
         try {
             let x_pos = time_to_main_chart_x(data[Math.floor(i)][0]);
@@ -285,6 +289,7 @@ const MyChart = ({
         try {
             navbar_dates.push(<g
                 transform={`translate(${i}, ${0})`}
+                key={i}
             >
                 <line
                     x1="0"
@@ -320,6 +325,7 @@ const MyChart = ({
     for (let i = first_date_start_time; i < brush_2_time + time_step_size; i += time_step_size) {
         main_chart_dates.push(<g
             transform={`translate(${time_to_main_chart_x(i)}, ${0})`}
+            key={i}
         >
             <line
                 x1="0"
@@ -346,8 +352,8 @@ const MyChart = ({
     //========================================================================
     // Scrollbar
 
-    let scroll_width = Math.max(Math.abs(x_pos_brush_1 - x_pos_brush_2) + 10, 20);
-    let scroll_x = Math.min(x_pos_brush_1, x_pos_brush_2) + Math.abs(x_pos_brush_1 - x_pos_brush_2) / 2 - scroll_width / 2;
+    let scroll_width = Math.max(Math.abs(time_to_navbar_x(x_pos_brush_1) - time_to_navbar_x(x_pos_brush_2)) + 10, 20);
+    let scroll_x = Math.min(time_to_navbar_x(x_pos_brush_1), time_to_navbar_x(x_pos_brush_2)) + Math.abs(time_to_navbar_x(x_pos_brush_1) - time_to_navbar_x(x_pos_brush_2)) / 2 - scroll_width / 2;
 
     //========================================================================
     // Horizontal Chart Lines
@@ -355,6 +361,7 @@ const MyChart = ({
     for (let i = MAIN_CHART_BOTTOM; i > MAIN_CHART_TOP; i -= MAIN_CHART_VALUE_SPACING_HEIGHT) {
         horizontal_lines.push(<g
             transform={`translate(${0},${i})`}
+            key={i}
         >
             <line
                 x1="0"
@@ -441,8 +448,8 @@ const MyChart = ({
                 let min_pos_time = main_chart_x_to_time(min_pos);
                 let max_pos_time = main_chart_x_to_time(max_pos);
                 set_hovered_point_pos([-100, -100]);
-                set_x_pos_brush_1(time_to_navbar_x(min_pos_time));
-                set_x_pos_brush_2(time_to_navbar_x(max_pos_time));
+                set_x_pos_brush_1(min_pos_time);
+                set_x_pos_brush_2(max_pos_time);
                 set_dragging_box(false);
             }
         }
@@ -566,9 +573,9 @@ const MyChart = ({
                 <g
                     onMouseDown={(e) => {
                         e.stopPropagation();
-                        set_x_origin_brush_1(e.clientX - x_pos_brush_1);
+                        set_x_origin_brush_1(e.clientX - time_to_navbar_x(x_pos_brush_1));
                         set_dragging_brush_1(true);
-                        set_x_origin_brush_2(e.clientX - x_pos_brush_2);
+                        set_x_origin_brush_2(e.clientX - time_to_navbar_x(x_pos_brush_2));
                         set_dragging_brush_2(true);
                     }}
                 >
@@ -582,10 +589,10 @@ const MyChart = ({
                         rx="5"
                     />
                     <rect
-                        x={Math.min(x_pos_brush_1, x_pos_brush_2)}
+                        x={Math.min(time_to_navbar_x(x_pos_brush_1), time_to_navbar_x(x_pos_brush_2))}
                         y={NAVBAR_TOP}
                         height={NAVBAR_HEIGHT}
-                        width={Math.abs(x_pos_brush_2 - x_pos_brush_1)}
+                        width={Math.abs(time_to_navbar_x(x_pos_brush_2) - time_to_navbar_x(x_pos_brush_1))}
                         fill="rgba(0,0,0,0.2)"
                         stroke="none"
                     />
@@ -594,12 +601,12 @@ const MyChart = ({
                 <g
                     onMouseDown={(e) => {
                         e.stopPropagation();
-                        set_x_origin_brush_1(e.clientX - x_pos_brush_1);
+                        set_x_origin_brush_1(e.clientX - time_to_navbar_x(x_pos_brush_1));
                         set_dragging_brush_1(true);
                     }}
                 >
                     <Brush
-                        x_pos={x_pos_brush_1}
+                        x_pos={time_to_navbar_x(x_pos_brush_1)}
                         y_pos={NAVBAR_TOP}
                         screenWidth={width}
                     />
@@ -608,12 +615,12 @@ const MyChart = ({
                 <g
                     onMouseDown={(e) => {
                         e.stopPropagation();
-                        set_x_origin_brush_2(e.clientX - x_pos_brush_2);
+                        set_x_origin_brush_2(e.clientX - time_to_navbar_x(x_pos_brush_2));
                         set_dragging_brush_2(true);
                     }}
                 >
                     <Brush
-                        x_pos={x_pos_brush_2}
+                        x_pos={time_to_navbar_x(x_pos_brush_2)}
                         y_pos={NAVBAR_TOP}
                         screenWidth={width}
                     />
@@ -648,7 +655,7 @@ const MyChart = ({
                     userSelect="none"
                     fill="black"> {show_vertical_line ? "hide center line" : "show center line"}</text>
                 <rect
-                    onClick={() => { set_x_pos_brush_1(0); set_x_pos_brush_2(width); }}
+                    onClick={() => { set_x_pos_brush_1(navbar_x_to_time(0)); set_x_pos_brush_2(navbar_x_to_time(width)); }}
                     x={width - 150}
                     rx="3"
                     y="7"
