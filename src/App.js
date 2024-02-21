@@ -23,19 +23,19 @@ function App() {
   },[])
 
 
-  const [x_pos_brush_1, set_x_pos_brush_1] = useState(1611296444000);
-  const [x_pos_brush_2, set_x_pos_brush_2] = useState(1613974844000);
+  const [time_brush_1, set_time_brush_1] = useState(1611296444000);
+  const [time_brush_2, set_time_brush_2] = useState(1613974844000);
 
   const [ticking, setTicking] = useState(true);
 
   useEffect(() => {
     const timer = setTimeout(() => {
       if (!ticking) { return; }
-      set_x_pos_brush_1(prev => prev + 0.001);
-      set_x_pos_brush_2(prev => prev + 0.001);
+      set_time_brush_1(prev => prev + 0.001);
+      set_time_brush_2(prev => prev + 0.001);
     }, 0.333e3)
     return () => clearTimeout(timer)
-  }, [x_pos_brush_1, x_pos_brush_2, ticking])
+  }, [time_brush_1, time_brush_2, ticking])
 
   return (
     <div style={{ padding: "100px" }}>
@@ -46,10 +46,10 @@ function App() {
         height={300}
         hide_closest_point={ticking}
         title="this is an example title"
-        x_pos_brush_1={x_pos_brush_1}
-        set_x_pos_brush_1={set_x_pos_brush_1}
-        x_pos_brush_2={x_pos_brush_2}
-        set_x_pos_brush_2={set_x_pos_brush_2}
+        time_brush_1={time_brush_1}
+        set_time_brush_1={set_time_brush_1}
+        time_brush_2={time_brush_2}
+        set_time_brush_2={set_time_brush_2}
       />
     </div>
 
