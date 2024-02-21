@@ -128,8 +128,8 @@ const Brush = ({
 
 
 const MyChart = ({
-    height,
-    width,
+    height = 300,
+    width = 700,
     data,
     title = "",
     loading = false,
@@ -137,7 +137,8 @@ const MyChart = ({
     x_pos_brush_2,
     set_x_pos_brush_1,
     set_x_pos_brush_2,
-    on_final_window_resize=()=>{}
+    hide_closest_point = false,
+    on_final_window_resize = () => { }
 }) => {
     const eleSvg = document.querySelector('svg');
     const NAVBAR_BOTTOM = height - DATE_SPACING_2_HEIGHT;
@@ -153,9 +154,10 @@ const MyChart = ({
         return mapRange(time, 0, width, start_time, end_time);
     }
 
+    // https://dev.to/netsi1964/screen-coordinates-to-svg-coordinates-3k0l
     const convert_world_to_svg_coord = (client_x_pos) => {
         let point = eleSvg.createSVGPoint();
-        point.x = client_x_pos; // 249
+        point.x = client_x_pos;
         point = point.matrixTransform(eleSvg.getScreenCTM().inverse());
         return point.x;
     }
@@ -498,21 +500,22 @@ const MyChart = ({
     }
 
 
-    const hovered_point = <g transform={`translate(${hovered_point_pos[0]},${hovered_point_pos[1]})`}>
-        <circle cx={0} cy={0} r="3" />
-        <text
-            paintOrder="stroke"
-            strokeWidth="2px"
-            stroke="white"
-            x="0"
-            y="-5"
-            fontFamily="Arial"
-            fontSize="10"
-            textAnchor="middle"
-            pointerEvents="none"
-            userSelect="none"
-            fill="black">{hovered_point_text}</text>
-    </g>
+    const hovered_point = hide_closest_point ? null :
+        <g transform={`translate(${hovered_point_pos[0]},${hovered_point_pos[1]})`}>
+            <circle cx={0} cy={0} r="3" />
+            <text
+                paintOrder="stroke"
+                strokeWidth="2px"
+                stroke="white"
+                x="0"
+                y="-5"
+                fontFamily="Arial"
+                fontSize="10"
+                textAnchor="middle"
+                pointerEvents="none"
+                userSelect="none"
+                fill="black">{hovered_point_text}</text>
+        </g>
 
     let clickable_rect = <rect
         onMouseDown={on_center_rect_click}
@@ -693,8 +696,8 @@ const MyChart = ({
                         fill="rgba(0,0,0,0.2)"
                     />
                     <text
-                        x={width/2}
-                        y={height/2}
+                        x={width / 2}
+                        y={height / 2}
                         textAnchor="middle"
                         fontWeight="bold"
                         fontSize="2rem"
