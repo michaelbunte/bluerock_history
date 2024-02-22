@@ -253,7 +253,7 @@ const MyChart = ({
     const main_chart_step_size = data.length / MAIN_CHART_RESOLUTION;
 
     let sliced_data = data.slice(first_index, last_index);
-    const downsampled_main_chart_data = LTTB(data, 1000);
+    const downsampled_main_chart_data = LTTB(sliced_data, 2000);
 
     let local_chart_max = downsampled_main_chart_data.reduce((acc, curr) => {
         return curr[1] > acc ? curr[1] : acc;
@@ -679,7 +679,11 @@ const MyChart = ({
                     userSelect="none"
                     fill="black"> {show_vertical_line ? "hide center line" : "show center line"}</text>
                 <rect
-                    onClick={() => { set_time_brush_1(navbar_x_to_time(0)); set_time_brush_2(navbar_x_to_time(width)); }}
+                    onClick={() => { 
+                        set_time_brush_1(navbar_x_to_time(0)); 
+                        set_time_brush_2(navbar_x_to_time(width)); 
+                        on_final_window_resize();
+                    }}
                     x={width - 150}
                     rx="3"
                     y="7"
