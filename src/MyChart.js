@@ -1,5 +1,6 @@
 import React from 'react';
 import { useState, useEffect } from 'react';
+import { LTTB } from 'downsample';
 
 const NAVBAR_HEIGHT = 50;
 const NAVBAR_RESOLUTION = 1000;
@@ -17,7 +18,7 @@ function mapRange(value, fromMin, fromMax, toMin, toMax, clamp = false) {
     const clampedValue = clamp ? Math.min(Math.max(value, fromMin), fromMax)
         : value;
 
-    if(fromMax == fromMin) { return toMin; }
+    if (fromMax == fromMin) { return toMin; }
 
     // Calculate the percentage of the input value within the source range
     const percentage = (clampedValue - fromMin) / (fromMax - fromMin);
@@ -220,6 +221,7 @@ const MyChart = ({
     // Navbar polyline
     const navbar_step_size = data.length / NAVBAR_RESOLUTION;
 
+
     let navbar_max = 0;
     for (let i = 0; i < data.length; i += navbar_step_size) {
         navbar_max = Math.max(data[Math.floor(i)][1], navbar_max);
@@ -232,7 +234,7 @@ const MyChart = ({
             let x_pos = time_to_navbar_x(data[target_index][0]);
             let y_pos = mapRange(data[target_index][1], 0, navbar_max, NAVBAR_HEIGHT, 0, true);
             navbar_points += `${x_pos},${y_pos} `
-        } catch(e){}
+        } catch (e) { }
     }
     navbar_points += `${width},${NAVBAR_HEIGHT}`;
 
@@ -244,13 +246,13 @@ const MyChart = ({
     let first_index = find_target_time_index(brush_1_time, data);
     let last_index = find_target_time_index(brush_2_time, data);
     const main_chart_step_size = data.length / MAIN_CHART_RESOLUTION;
+    
+    let sliced_data = data.slice(first_index, last_index);
+    const downsampled_main_chart_data = LTTB(sliced_data, 1000);
 
-    let local_chart_max = data[first_index][1];
-    for (let i = first_index; i <= last_index + Math.max(main_chart_step_size, 2); i += main_chart_step_size) {
-        try {
-            local_chart_max = Math.max(data[Math.floor(i)][1], local_chart_max)
-        } catch (e) { }
-    }
+    let local_chart_max = downsampled_main_chart_data.reduce((acc, curr) => {
+        return curr[1] > acc ? curr[1] : acc;
+    }, downsampled_main_chart_data[0][1]) * 1.1;
 
 
     const time_to_main_chart_x = (time) => {
@@ -269,10 +271,10 @@ const MyChart = ({
 
 
     let main_chart_line_points = `${time_to_main_chart_x(data[0][0])},${NAVBAR_BOTTOM} `;
-    for (let i = first_index; i <= last_index + Math.max(main_chart_step_size, 2); i += main_chart_step_size) {
+    for (let i = 0; i <= downsampled_main_chart_data.length; i++) {
         try {
-            let x_pos = time_to_main_chart_x(data[Math.floor(i)][0]);
-            let y_pos = main_chart_value_to_y(data[Math.floor(i)][1]);
+            let x_pos = time_to_main_chart_x(downsampled_main_chart_data[Math.floor(i)][0]);
+            let y_pos = main_chart_value_to_y(downsampled_main_chart_data[Math.floor(i)][1]);
             main_chart_line_points += `${x_pos},${y_pos} `
         } catch (e) { }
     }
