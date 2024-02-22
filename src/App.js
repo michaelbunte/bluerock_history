@@ -19,6 +19,7 @@ function App() {
   const [time_brush_1, set_time_brush_1] = useState(1611296444000);
   const [time_brush_2, set_time_brush_2] = useState(1613974844000);
   const [cache_dimensions, set_cache_dimensions] = useState({ start: new Date(), end: new Date() });
+  const [time_brush_image, set_time_brush_image] = useState({ start: new Date(), end: new Date() });
   const [ticking, setTicking] = useState(true);
   const [is_loading, set_is_loading] = useState(false);
 
@@ -30,6 +31,7 @@ function App() {
       set_is_loading(true);
       let cache_size = get_cache_size(start_date, end_date);
       set_cache_dimensions(cache_size);
+      set_time_brush_image({start: start_date, end: end_date});
       let fetch_string = `http://${host_string}/bluerock/adaptive_all_history/permeateflow/${cache_size["start"].toISOString()}/${cache_size["end"].toISOString()}`;
       let response = await fetch(fetch_string);
       let response_json = await response.json();
@@ -42,20 +44,32 @@ function App() {
   }, [])
 
 
-  // useEffect(() => {
-  //   const timer = setTimeout(() => {
-  //     if (!ticking) { return; }
-  //     set_time_brush_1(prev => prev + 10000);
-  //     set_time_brush_2(prev => prev + 10000);
-  //   }, 0.333e3)
-  //   return () => clearTimeout(timer)
-  // }, [time_brush_1, time_brush_2, ticking]);
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      console.log("ticking")
+      if (!ticking || is_loading) { return; }
+      set_time_brush_1(prev => prev + 5000000);
+      set_time_brush_2(prev => prev + 5000000);
+      
+      if(time_brush_2 > (time_brush_image["end"].getTime() + cache_dimensions["end"].getTime())/2) {
+        const update = async () => {
+          let cache_size = get_cache_size(time_brush_1, time_brush_2);
+          set_cache_dimensions(cache_size);
+          set_time_brush_image({start: new Date(time_brush_1), end: new Date(time_brush_2)});
+          let fetch_string = `http://${host_string}/bluerock/adaptive_all_history/permeateflow/${cache_size["start"].toISOString()}/${cache_size["end"].toISOString()}`;
+          let response = await fetch(fetch_string);
+          let response_json = await response.json();
+          set_data(response_json);
+        }
+        update();
+      }
+    }, 0.333e3)
+    return () => clearTimeout(timer)
+  }, [time_brush_1, time_brush_2, ticking, is_loading]);
 
   const on_window_resize = async () => {
     set_is_loading(true);
     let cache_size = get_cache_size(time_brush_1, time_brush_2);
-    console.log(cache_size);
-    console.log(new Date(time_brush_2))
     set_cache_dimensions(cache_size);
     let fetch_string = `http://${host_string}/bluerock/adaptive_all_history/permeateflow/${cache_size["start"].toISOString()}/${cache_size["end"].toISOString()}`;
     let response = await fetch(fetch_string);
