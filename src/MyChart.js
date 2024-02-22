@@ -13,6 +13,17 @@ const MAIN_CHART_VALUE_SPACING_HEIGHT = 50;
 const MAIN_CHART_TOP = 20;
 const MIN_ZOOM_SIZE = 10000; // 10 seconds
 
+function get_full_time_string(date) {
+    return date.toLocaleString("en-GB", {
+        day: "numeric",
+        month: "short",
+        year: "numeric",
+        hour: "numeric",
+        minute: "2-digit",
+        second: "2-digit"
+    });
+}
+
 
 function mapRange(value, fromMin, fromMax, toMin, toMax, clamp = false) {
     // Ensure the input value is within the source range
@@ -416,14 +427,7 @@ const MyChart = ({
         />
     </g>
 
-    let vertical_line_time = new Date(main_chart_x_to_time(width / 2)).toLocaleString("en-GB", {
-        day: "numeric",
-        month: "short",
-        year: "numeric",
-        hour: "numeric",
-        minute: "2-digit",
-        second: "2-digit"
-    });
+    let vertical_line_time = get_full_time_string(new Date(main_chart_x_to_time(width / 2)));
 
     //========================================================================
     // Selectable Chart Logic
@@ -458,6 +462,7 @@ const MyChart = ({
                 set_time_brush_1(min_pos_time);
                 set_time_brush_2(max_pos_time);
                 set_dragging_box(false);
+                on_final_window_resize();
             }
         }
         window.addEventListener('mousemove', handle_mouse_move);
@@ -489,6 +494,7 @@ const MyChart = ({
     // Highlight closest point
 
     const [hovered_point_text, set_hovered_point_text] = useState("");
+    const [hovered_point_time, set_hovered_point_time] = useState("");
 
     const on_center_rect_hover = (e) => {
         try {
@@ -506,9 +512,11 @@ const MyChart = ({
             if (Math.abs(new_x_pos_1 - e.clientX) < Math.abs(new_x_pos_2 - client_x_pos)) {
                 set_hovered_point_pos([new_x_pos_1, new_y_pos_1]);
                 set_hovered_point_text(data[chosen_index][1]);
+                set_hovered_point_time(get_full_time_string(new Date(data[chosen_index][1])));
             } else {
                 set_hovered_point_pos([new_x_pos_2, new_y_pos_2]);
                 set_hovered_point_text(data[chosen_index + 1][1]);
+                set_hovered_point_time(get_full_time_string(new Date(data[chosen_index+1][1])));
             }
         } catch (e) { }
     }
@@ -516,7 +524,7 @@ const MyChart = ({
 
     const hovered_point = hide_closest_point ? null :
         <g transform={`translate(${hovered_point_pos[0]},${hovered_point_pos[1]})`}>
-            <circle cx={0} cy={0} r="3" />
+            <circle cx={0} cy={0} r="3" stroke="white" />
             <text
                 paintOrder="stroke"
                 strokeWidth="2px"
@@ -529,6 +537,18 @@ const MyChart = ({
                 pointerEvents="none"
                 userSelect="none"
                 fill="black">{hovered_point_text}</text>
+            <text
+                paintOrder="stroke"
+                strokeWidth="2px"
+                stroke="white"
+                x="0"
+                y="12"
+                fontFamily="Arial"
+                fontSize="10"
+                textAnchor="middle"
+                pointerEvents="none"
+                userSelect="none"
+                fill="black">{hovered_point_time}</text>
         </g>
 
     let clickable_rect = <rect
@@ -577,7 +597,6 @@ const MyChart = ({
                     fill="lightgreen"
                 />
 
-
                 <rect
                     x={0}
                     y={MAIN_CHART_BOTTOM}
@@ -597,7 +616,6 @@ const MyChart = ({
                         fill="lightblue"
                         stroke="black" />
                 </g>
-
 
                 <g
                     onMouseDown={(e) => {
@@ -684,9 +702,9 @@ const MyChart = ({
                     userSelect="none"
                     fill="black"> {show_vertical_line ? "hide center line" : "show center line"}</text>
                 <rect
-                    onClick={() => { 
-                        set_time_brush_1(navbar_x_to_time(0)); 
-                        set_time_brush_2(navbar_x_to_time(width)); 
+                    onClick={() => {
+                        set_time_brush_1(navbar_x_to_time(0));
+                        set_time_brush_2(navbar_x_to_time(width));
                         on_final_window_resize();
                     }}
                     x={width - 150}

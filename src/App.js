@@ -20,10 +20,11 @@ function App() {
   const [time_brush_2, set_time_brush_2] = useState(1613974844000);
   const [cache_dimensions, set_cache_dimensions] = useState({ start: new Date(), end: new Date() });
   const [time_brush_image, set_time_brush_image] = useState({ start: new Date(), end: new Date() });
-  const [ticking, setTicking] = useState(true);
+  const [ticking, setTicking] = useState(false);
   const [is_loading, set_is_loading] = useState(false);
 
 
+  // initial load
   useEffect(() => {
     async function fetch_data() {
       let start_date = new Date('2021-01-03');
@@ -44,12 +45,12 @@ function App() {
   }, [])
 
 
+  // move forward in time
   useEffect(() => {
     const timer = setTimeout(() => {
-      console.log("ticking")
       if (!ticking || is_loading) { return; }
-      set_time_brush_1(prev => prev + 5000000);
-      set_time_brush_2(prev => prev + 5000000);
+      set_time_brush_1(prev => prev + 10000000);
+      set_time_brush_2(prev => prev + 10000000);
       
       if(time_brush_2 > (time_brush_image["end"].getTime() + cache_dimensions["end"].getTime())/2) {
         const update = async () => {
@@ -60,6 +61,7 @@ function App() {
           let response = await fetch(fetch_string);
           let response_json = await response.json();
           set_data(response_json);
+          console.log("received data")
         }
         update();
       }
