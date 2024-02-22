@@ -179,8 +179,10 @@ const MyChart = ({
         }
         const handle_mouse_up = function (e) {
             e.stopPropagation()
+            if (dragging_brush_1) {
+                on_final_window_resize();
+            }
             set_dragging_brush_1(false);
-            on_final_window_resize();
         }
         window.addEventListener('mousemove', handle_mouse_move);
         window.addEventListener('mouseup', handle_mouse_up);
@@ -205,6 +207,9 @@ const MyChart = ({
         }
         const handle_mouse_up = function (e) {
             e.stopPropagation()
+            if (!dragging_brush_1 && dragging_brush_2) {
+                on_final_window_resize();
+            }
             set_dragging_brush_2(false);
         }
         window.addEventListener('mousemove', handle_mouse_move);
@@ -246,14 +251,13 @@ const MyChart = ({
     let first_index = find_target_time_index(brush_1_time, data);
     let last_index = find_target_time_index(brush_2_time, data);
     const main_chart_step_size = data.length / MAIN_CHART_RESOLUTION;
-    
+
     let sliced_data = data.slice(first_index, last_index);
-    const downsampled_main_chart_data = LTTB(sliced_data, 1000);
+    const downsampled_main_chart_data = LTTB(data, 1000);
 
     let local_chart_max = downsampled_main_chart_data.reduce((acc, curr) => {
         return curr[1] > acc ? curr[1] : acc;
     }, downsampled_main_chart_data[0][1]) * 1.1;
-
 
     const time_to_main_chart_x = (time) => {
         return mapRange(time, brush_1_time, brush_2_time, 0, width);
@@ -273,8 +277,8 @@ const MyChart = ({
     let main_chart_line_points = `${time_to_main_chart_x(data[0][0])},${NAVBAR_BOTTOM} `;
     for (let i = 0; i <= downsampled_main_chart_data.length; i++) {
         try {
-            let x_pos = time_to_main_chart_x(downsampled_main_chart_data[Math.floor(i)][0]);
-            let y_pos = main_chart_value_to_y(downsampled_main_chart_data[Math.floor(i)][1]);
+            let x_pos = time_to_main_chart_x(downsampled_main_chart_data[i][0]);
+            let y_pos = main_chart_value_to_y(downsampled_main_chart_data[i][1]);
             main_chart_line_points += `${x_pos},${y_pos} `
         } catch (e) { }
     }
@@ -537,6 +541,13 @@ const MyChart = ({
         fill="rgba(0,0,0,0.0)"
     />
 
+    useEffect(() => {
+        if (loading) {
+            set_dragging_box(false);
+            set_dragging_brush_1(false);
+            set_dragging_brush_2(false);
+        }
+    }, [loading]);
 
     return (
         <div>
@@ -551,9 +562,16 @@ const MyChart = ({
 
                 <polyline
                     points={main_chart_line_points}
+                    strokeWidth="2"
                     stroke="black"
                     fill="lightgreen"
                 />
+                <polyline
+                    points={main_chart_line_points}
+                    stroke="none"
+                    fill="lightgreen"
+                />
+
 
                 <rect
                     x={0}
@@ -565,6 +583,10 @@ const MyChart = ({
                 />
 
                 <g transform={`translate(0, ${NAVBAR_TOP})`}>
+                    <polyline
+                        points={navbar_points}
+                        fill="none"
+                        stroke="black" />
                     <polyline
                         points={navbar_points}
                         fill="lightblue"
