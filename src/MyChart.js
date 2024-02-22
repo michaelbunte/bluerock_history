@@ -11,6 +11,7 @@ const NAVBAR_DATE_SPACING_WIDTH = 80;
 const MAIN_CHART_DATE_SPACING_WIDTH = 80;
 const MAIN_CHART_VALUE_SPACING_HEIGHT = 50;
 const MAIN_CHART_TOP = 20;
+const MIN_ZOOM_SIZE = 10000; // 10 seconds
 
 
 function mapRange(value, fromMin, fromMax, toMin, toMax, clamp = false) {
@@ -252,7 +253,7 @@ const MyChart = ({
     let last_index = find_target_time_index(brush_2_time, data);
     const main_chart_step_size = data.length / MAIN_CHART_RESOLUTION;
 
-    let sliced_data = data.slice(first_index, last_index);
+    let sliced_data = data.slice(first_index, last_index + 1);
     const downsampled_main_chart_data = LTTB(sliced_data, 2000);
 
     let local_chart_max = downsampled_main_chart_data.reduce((acc, curr) => {
@@ -443,7 +444,7 @@ const MyChart = ({
         const handle_mouse_up = function (e) {
             e.stopPropagation();
             if (dragging_box) {
-                if (x_pos_box_start === x_pos_box_curr) {
+                if (Math.abs(main_chart_x_to_time(x_pos_box_start) - main_chart_x_to_time(x_pos_box_curr)) <= MIN_ZOOM_SIZE) {
                     set_dragging_box(false);
                     return;
                 }
@@ -540,6 +541,10 @@ const MyChart = ({
         height={MAIN_CHART_BOTTOM - MAIN_CHART_TOP}
         fill="rgba(0,0,0,0.0)"
     />
+
+
+    //========================================================================
+    // Disable all selections while loading 
 
     useEffect(() => {
         if (loading) {
