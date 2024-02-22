@@ -512,11 +512,11 @@ const MyChart = ({
             if (Math.abs(new_x_pos_1 - e.clientX) < Math.abs(new_x_pos_2 - client_x_pos)) {
                 set_hovered_point_pos([new_x_pos_1, new_y_pos_1]);
                 set_hovered_point_text(data[chosen_index][1]);
-                set_hovered_point_time(get_full_time_string(new Date(data[chosen_index][1])));
+                set_hovered_point_time(get_full_time_string(new Date(data[chosen_index][0])));
             } else {
                 set_hovered_point_pos([new_x_pos_2, new_y_pos_2]);
                 set_hovered_point_text(data[chosen_index + 1][1]);
-                set_hovered_point_time(get_full_time_string(new Date(data[chosen_index+1][1])));
+                set_hovered_point_time(get_full_time_string(new Date(data[chosen_index+1][0])));
             }
         } catch (e) { }
     }
