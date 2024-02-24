@@ -153,6 +153,7 @@ const MyChart = ({
     set_time_brush_1,
     set_time_brush_2,
     hide_closest_point = false,
+    int_chart_map = undefined,
     on_final_window_resize = () => { }
 }) => {
     const eleSvg = document.querySelector('svg');
@@ -162,6 +163,9 @@ const MyChart = ({
 
     const start_time = data[0][0];
     const end_time = data[data.length - 1][0];
+
+    const is_int_chart = int_chart_map !== undefined;
+
     const time_to_navbar_x = (time) => {
         return mapRange(time, start_time, end_time, 0, width);
     }
@@ -240,18 +244,21 @@ const MyChart = ({
 
 
     let navbar_max = 0;
-    for (let i = 0; i < data.length; i += navbar_step_size) {
-        navbar_max = Math.max(data[Math.floor(i)][1], navbar_max);
-    }
-
     let navbar_points = `0,${NAVBAR_HEIGHT} `;
-    for (let t = start_time; t < end_time; t += (end_time - start_time) / NAVBAR_RESOLUTION) {
-        try {
-            let target_index = find_target_time_index(t, data);
-            let x_pos = time_to_navbar_x(data[target_index][0]);
-            let y_pos = mapRange(data[target_index][1], 0, navbar_max, NAVBAR_HEIGHT, 0, true);
-            navbar_points += `${x_pos},${y_pos} `
-        } catch (e) { }
+
+    if (!is_int_chart) {
+        for (let i = 0; i < data.length; i += navbar_step_size) {
+            navbar_max = Math.max(data[Math.floor(i)][1], navbar_max);
+        }
+
+        for (let t = start_time; t < end_time; t += (end_time - start_time) / NAVBAR_RESOLUTION) {
+            try {
+                let target_index = find_target_time_index(t, data);
+                let x_pos = time_to_navbar_x(data[target_index][0]);
+                let y_pos = mapRange(data[target_index][1], 0, navbar_max, NAVBAR_HEIGHT, 0, true);
+                navbar_points += `${x_pos},${y_pos} `
+            } catch (e) { }
+        }
     }
     navbar_points += `${width},${NAVBAR_HEIGHT}`;
 
@@ -260,16 +267,19 @@ const MyChart = ({
     // Main Chart Polyline
     let brush_1_time = time_brush_1;
     let brush_2_time = time_brush_2;
-    let first_index = find_target_time_index(brush_1_time, data);
-    let last_index = find_target_time_index(brush_2_time, data);
+    const first_index = find_target_time_index(brush_1_time, data);
+    const last_index = find_target_time_index(brush_2_time, data);
     const main_chart_step_size = data.length / MAIN_CHART_RESOLUTION;
 
     let sliced_data = data.slice(first_index, last_index + 1);
     const downsampled_main_chart_data = LTTB(sliced_data, 2000);
 
-    let local_chart_max = downsampled_main_chart_data.reduce((acc, curr) => {
-        return curr[1] > acc ? curr[1] : acc;
-    }, downsampled_main_chart_data[0][1]) * 1.1;
+    let local_chart_max = 1;
+    if (!is_int_chart) {
+        local_chart_max = downsampled_main_chart_data.reduce((acc, curr) => {
+            return curr[1] > acc ? curr[1] : acc;
+        }, downsampled_main_chart_data[0][1]) * 1.1;
+    }
 
     const time_to_main_chart_x = (time) => {
         return mapRange(time, brush_1_time, brush_2_time, 0, width);
@@ -287,15 +297,51 @@ const MyChart = ({
 
 
     let main_chart_line_points = `${time_to_main_chart_x(data[0][0])},${NAVBAR_BOTTOM} `;
-    for (let i = 0; i <= downsampled_main_chart_data.length; i++) {
-        try {
-            let x_pos = time_to_main_chart_x(downsampled_main_chart_data[i][0]);
-            let y_pos = main_chart_value_to_y(downsampled_main_chart_data[i][1]);
-            main_chart_line_points += `${x_pos},${y_pos} `
-        } catch (e) { }
+
+    if (!is_int_chart) {
+        for (let i = 0; i <= downsampled_main_chart_data.length; i++) {
+            try {
+                let x_pos = time_to_main_chart_x(downsampled_main_chart_data[i][0]);
+                let y_pos = main_chart_value_to_y(downsampled_main_chart_data[i][1]);
+                main_chart_line_points += `${x_pos},${y_pos} `
+            } catch (e) { }
+        }
     }
 
     main_chart_line_points += `${time_to_main_chart_x(data[data.length - 1][0])},${NAVBAR_BOTTOM} `;
+
+    //========================================================================
+    // Int chart main chart
+    
+    let int_chart_dict = {}
+    let int_chart_main_chart_rects = [];
+    if (is_int_chart) {
+        int_chart_dict = int_chart_map.reduce((acc, row, _) => {
+            acc[row[0]] = [row[1], row[2]]
+            return acc;
+        }, {});
+        let last_value_data = data[first_index][1];
+        let last_value_start_time = data[first_index][0];
+        for (let i = first_index; i < last_index; i += 1) {
+            try {
+                let current_value_data = data[Math.floor(i)][1];
+                let current_value_time = data[Math.floor(i)][0];
+                if (current_value_data !== last_value_data || i + 1 > last_index) {
+                    int_chart_main_chart_rects.push(<rect
+                        key={`${i} 321`}
+                        x={time_to_main_chart_x(last_value_start_time)}
+                        y={MAIN_CHART_TOP}
+                        width={time_to_main_chart_x(current_value_time) - time_to_main_chart_x(last_value_start_time)}
+                        height={MAIN_CHART_BOTTOM - MAIN_CHART_TOP}
+                        stroke="none"
+                        fill={current_value_data in int_chart_dict ? int_chart_dict[current_value_data][1] : 'pink'}
+                    />);
+                    last_value_data = current_value_data;
+                    last_value_start_time = current_value_time;
+                }
+            } catch (e) { }
+        }
+    }
 
     //========================================================================
     // Navbar Dates
@@ -516,7 +562,7 @@ const MyChart = ({
             } else {
                 set_hovered_point_pos([new_x_pos_2, new_y_pos_2]);
                 set_hovered_point_text(data[chosen_index + 1][1]);
-                set_hovered_point_time(get_full_time_string(new Date(data[chosen_index+1][0])));
+                set_hovered_point_time(get_full_time_string(new Date(data[chosen_index + 1][0])));
             }
         } catch (e) { }
     }
@@ -574,6 +620,35 @@ const MyChart = ({
         }
     }, [loading]);
 
+    //========================================================================
+    // int_chart navbar
+    let int_chart_navbar_rects = [];
+    if (is_int_chart) {
+        let navbar_step_size = width / NAVBAR_RESOLUTION;
+        let last_value_data = data[0][1];
+        let last_value_start_time = data[0][0];
+        for (let i = navbar_step_size; i < width; i += navbar_step_size) {
+            try {
+                let target_index = find_target_time_index(navbar_x_to_time(i), data);
+                let current_value_data = data[target_index][1];
+                let current_value_time = data[target_index][0];
+                if (current_value_data !== last_value_data) {
+                    int_chart_navbar_rects.push(<rect
+                        key={`${i} 123`}
+                        x={time_to_navbar_x(last_value_start_time)}
+                        y={NAVBAR_TOP}
+                        width={time_to_navbar_x(current_value_time) - time_to_navbar_x(last_value_start_time)}
+                        height={NAVBAR_BOTTOM - NAVBAR_TOP}
+                        stroke="none"
+                        fill={current_value_data in int_chart_dict ? int_chart_dict[current_value_data][1] : 'pink'}
+                    />);
+                    last_value_data = current_value_data;
+                    last_value_start_time = current_value_time;
+                }
+            } catch (e) { }
+        }
+    }
+
     return (
         <div>
             <svg width={width} height={height} xmlns="http://www.w3.org/2000/svg">
@@ -585,17 +660,17 @@ const MyChart = ({
                     stroke="none"
                     fill="white" />
 
-                <polyline
+                {!is_int_chart && <g><polyline
                     points={main_chart_line_points}
                     strokeWidth="2"
                     stroke="black"
                     fill="lightgreen"
                 />
-                <polyline
-                    points={main_chart_line_points}
-                    stroke="none"
-                    fill="lightgreen"
-                />
+                    <polyline
+                        points={main_chart_line_points}
+                        stroke="none"
+                        fill="lightgreen"
+                    /></g>}
 
                 <rect
                     x={0}
@@ -606,17 +681,20 @@ const MyChart = ({
                     fill="#faedfc"
                 />
 
-                <g transform={`translate(0, ${NAVBAR_TOP})`}>
-                    <polyline
-                        points={navbar_points}
-                        fill="none"
-                        stroke="black" />
-                    <polyline
-                        points={navbar_points}
-                        fill="lightblue"
-                        stroke="black" />
-                </g>
-
+                {is_int_chart &&
+                    <g transform={`translate(0, ${NAVBAR_TOP})`}>
+                        <polyline
+                            points={navbar_points}
+                            fill="none"
+                            stroke="black" />
+                        <polyline
+                            points={navbar_points}
+                            fill="lightblue"
+                            stroke="black" />
+                    </g>
+                }
+                {int_chart_navbar_rects}
+                {int_chart_main_chart_rects}
                 <g
                     onMouseDown={(e) => {
                         e.stopPropagation();
@@ -745,6 +823,7 @@ const MyChart = ({
                 {hovered_point}
                 {clickable_rect}
                 {highlight_rect}
+
                 {loading && <g>
                     <rect
                         x="0"
