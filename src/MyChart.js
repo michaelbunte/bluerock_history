@@ -681,7 +681,7 @@ const MyChart = ({
                     fill="#faedfc"
                 />
 
-                {is_int_chart &&
+                {!is_int_chart &&
                     <g transform={`translate(0, ${NAVBAR_TOP})`}>
                         <polyline
                             points={navbar_points}

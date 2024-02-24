@@ -62,7 +62,33 @@ const create_modal_table = (
     return modal_table_dict;
 }
 
+function ChartHolder({ chart }) {
+    return <div style={{
+        background: "white",
+        padding: "2px",
+        display: "flex",
+        alignItems: "center",
+        border: "grey 2px solid",
+        borderRadius: "3px",
+        margin: "3px"
+    }}>
+        <div style={{
+            color: "black",
+            fontSize: "3rem",
+            fontWeight: "bold",
+            padding: "20px"
+        }}>
+            ×
+        </div>
+        <div style={{
+        }}>
+            {chart}
+        </div>
+    </div>
+}
+
 export {
     create_modal_table,
     initialize_modal_table_dict,
+    ChartHolder
 };
