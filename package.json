@@ -6,6 +6,7 @@
     "@testing-library/jest-dom": "^5.17.0",
     "@testing-library/react": "^13.4.0",
     "@testing-library/user-event": "^13.5.0",
+    "adminlte-2-react": "^0.2.0",
     "apexcharts": "^3.46.0",
     "d3": "^7.8.5",
     "downsample": "^1.4.0",
