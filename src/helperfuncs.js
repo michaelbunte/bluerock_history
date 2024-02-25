@@ -77,7 +77,8 @@ function ChartHolder({ chart }) {
             color: "black",
             fontSize: "3rem",
             fontWeight: "bold",
-            padding: "20px"
+            padding: "20px",
+            cursor: "pointer"
         }}>
             ×
         </div>

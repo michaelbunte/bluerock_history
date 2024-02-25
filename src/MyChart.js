@@ -534,6 +534,7 @@ const MyChart = ({
         height={MAIN_CHART_BOTTOM - MAIN_CHART_TOP}
         width={Math.abs(x_pos_box_curr - x_pos_box_start)}
         fill="rgba(0,0,0,0.2)"
+        cursor="col-resize"
     />
 
     //========================================================================
@@ -606,6 +607,7 @@ const MyChart = ({
         width={width}
         height={MAIN_CHART_BOTTOM - MAIN_CHART_TOP}
         fill="rgba(0,0,0,0.0)"
+        cursor={dragging_box ? "col-resize" : "pointer"}
     />
 
 
@@ -703,6 +705,7 @@ const MyChart = ({
                         set_x_origin_brush_2(e.clientX - time_to_navbar_x(time_brush_2));
                         set_dragging_brush_2(true);
                     }}
+                    cursor={dragging_brush_1 || dragging_brush_2 ? "col-resize": "pointer"}
                 >
                     <rect
                         x={scroll_x}
@@ -729,6 +732,7 @@ const MyChart = ({
                         set_x_origin_brush_1(e.clientX - time_to_navbar_x(time_brush_1));
                         set_dragging_brush_1(true);
                     }}
+                    cursor={dragging_brush_1 || dragging_brush_2 ? "col-resize": "pointer"}
                 >
                     <Brush
                         x_pos={time_to_navbar_x(time_brush_1)}
@@ -743,6 +747,7 @@ const MyChart = ({
                         set_x_origin_brush_2(e.clientX - time_to_navbar_x(time_brush_2));
                         set_dragging_brush_2(true);
                     }}
+                    cursor={dragging_brush_1 || dragging_brush_2 ? "col-resize": "pointer"}
                 >
                     <Brush
                         x_pos={time_to_navbar_x(time_brush_2)}

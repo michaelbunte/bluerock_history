@@ -127,9 +127,6 @@ function App() {
     <ChartHolder chart={mychart1} />
   </div>;
 
-  // const tableData = [
-  //   { sensor: "loading"}
-  // ];
 
   const tableColumns = [
     { title: 'Sensor', data: 'sensor' },
@@ -160,7 +157,6 @@ function App() {
     striped={true}
     condensed={true}
     pageSize={10}
-    toggleHidden={false}
     selectedRows={[]}
   />
   return (
