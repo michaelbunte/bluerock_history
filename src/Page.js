@@ -52,7 +52,6 @@ function App() {
         set_current_modal_string,
         set_current_modal_data
       );
-      console.log(created_dict);
       set_modal_table_dict(created_dict);
       // Load Permflow
       let cache_size = get_cache_size(start_date, end_date);
@@ -134,16 +133,35 @@ function App() {
 
   const tableColumns = [
     { title: 'Sensor', data: 'sensor' },
+    { title: '', data: 'selectbox' },
   ];
 
   let sensor_table_data = Object.keys(modal_table_dict)
-    .map(key => ({ "sensor": modal_table_dict[key]["human_readible_name"] }))
+    .map(key => ({ 
+      "sensor": modal_table_dict[key]["human_readible_name"],
+      "selectbox": <input 
+        type="checkbox"
+        onChange={(e)=>set_modal_table_dict((prev)=>({
+          ...prev,
+          [key]:{
+            ...prev[key],
+            is_selected: e.target.checked
+          }
+        }))}
+        checked={modal_table_dict[key]["is_selected"]}
+        />
+    }))
     .filter(a=> a["sensor"] !== undefined && a["sensor"] !== "")
     .sort((a, b) => a["sensor"].localeCompare(b["sensor"]));
-  console.log(sensor_table_data)
+  console.log(modal_table_dict)
   const sensor_table = <SmartTable
     data={sensor_table_data}
     columns={tableColumns}
+    striped={true}
+    condensed={true}
+    pageSize={10}
+    toggleHidden={false}
+    selectedRows={[]}
   />
   return (
     <div>

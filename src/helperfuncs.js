@@ -27,6 +27,7 @@ const create_modal_table = (
             abbreviated_name: row["abbreviated_name"],
             current_value: undefined,
             units: row["units"],
+            is_selected: false,
             on_click: async () => {
                 set_current_modal(row["human_readible_name"]);
                 try {
