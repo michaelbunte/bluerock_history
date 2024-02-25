@@ -25,7 +25,7 @@ function get_cache_size(brush_1, brush_2) {
 function App() {
   const [modal_table_dict, set_modal_table_dict] = useState(initialize_modal_table_dict());
   const [current_modal_data, set_current_modal_data] = useState([]);
-  const [data, set_data] = useState([[1613404800000, 0], [1613404801000, 0], [1613404802000, 0]]);
+  const [data, set_data] = useState([[1613404800000, 0], [1613404801000, 0], [1613404802000]]);
   const [time_brush_1, set_time_brush_1] = useState(1611296444000);
   const [time_brush_2, set_time_brush_2] = useState(1613974844000);
   const [last_received_time, set_last_received_time] = useState(0);

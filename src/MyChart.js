@@ -156,6 +156,10 @@ const MyChart = ({
     int_chart_map = undefined,
     on_final_window_resize = () => { }
 }) => {
+    if (data == [] || data == undefined || data == [[]]) {
+        data = [[1613404800000, 0], [1613404100000, 0]]
+    }
+    
     const eleSvg = document.querySelector('svg');
     const NAVBAR_BOTTOM = height - DATE_SPACING_2_HEIGHT;
     const NAVBAR_TOP = height - DATE_SPACING_2_HEIGHT - NAVBAR_HEIGHT;
