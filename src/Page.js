@@ -2,6 +2,7 @@ import logo from './logo.svg';
 import './App.css';
 import MyChart from './MyChart';
 import Box from './Box';
+import { SmartTable } from 'adminlte-2-react';
 
 import { useState, useEffect } from 'react';
 import {
@@ -10,8 +11,8 @@ import {
   ChartHolder
 } from './helperfuncs';
 
-// let host_string = "ec2-54-215-192-153.us-west-1.compute.amazonaws.com:5001";
-let host_string = "localhost:5001";
+let host_string = "ec2-54-215-192-153.us-west-1.compute.amazonaws.com:5001";
+// let host_string = "localhost:5001";
 
 function get_cache_size(brush_1, brush_2) {
   let brush_1_date = new Date(brush_1);
@@ -52,7 +53,7 @@ function App() {
         set_current_modal_data
       );
       console.log(created_dict);
-
+      set_modal_table_dict(created_dict);
       // Load Permflow
       let cache_size = get_cache_size(start_date, end_date);
       set_cache_dimensions(cache_size);
@@ -123,13 +124,30 @@ function App() {
   />
 
   let charts = <div>
-    <ChartHolder chart={mychart1}/>
-    <ChartHolder chart={mychart1}/>
+    <ChartHolder chart={mychart1} />
+    <ChartHolder chart={mychart1} />
   </div>;
 
+  // const tableData = [
+  //   { sensor: "loading"}
+  // ];
+
+  const tableColumns = [
+    { title: 'Sensor', data: 'sensor' },
+  ];
+
+  let sensor_table_data = Object.keys(modal_table_dict)
+    .map(key => ({ "sensor": modal_table_dict[key]["human_readible_name"] }))
+    .sort((a, b) => a["sensor"].localeCompare(b["sensor"]));
+  console.log(sensor_table_data)
+  const sensor_table = <SmartTable
+    data={sensor_table_data}
+    columns={tableColumns}
+  />
   return (
     <div>
       <Box contents={charts} />
+      <Box contents={sensor_table} />
     </div>
 
   );
