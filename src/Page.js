@@ -138,6 +138,7 @@ function App() {
 
   let sensor_table_data = Object.keys(modal_table_dict)
     .map(key => ({ "sensor": modal_table_dict[key]["human_readible_name"] }))
+    .filter(a=> a["sensor"] !== undefined && a["sensor"] !== "")
     .sort((a, b) => a["sensor"].localeCompare(b["sensor"]));
   console.log(sensor_table_data)
   const sensor_table = <SmartTable
