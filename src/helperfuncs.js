@@ -63,7 +63,10 @@ const create_modal_table = (
     return modal_table_dict;
 }
 
-function ChartHolder({ chart }) {
+function ChartHolder({ 
+    chart,
+    on_x = ()=>{}
+ }) {
     return <div style={{
         background: "white",
         padding: "2px",
@@ -79,7 +82,9 @@ function ChartHolder({ chart }) {
             fontWeight: "bold",
             padding: "20px",
             cursor: "pointer"
-        }}>
+        }}
+        onClick={on_x}
+        >
             ×
         </div>
         <div style={{
