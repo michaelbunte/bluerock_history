@@ -56,14 +56,10 @@ function App() {
         set_current_modal_data
       );
       set_modal_table_dict(created_dict);
-      // Load Permflow
       let cache_size = get_cache_size(start_date, end_date);
       set_cache_dimensions(cache_size);
       set_time_brush_image({ start: start_date, end: end_date });
-      let fetch_string = `http://${host_string}/bluerock/adaptive_all_history/state/${cache_size["start"].toISOString()}/${cache_size["end"].toISOString()}`;
-      let response = await fetch(fetch_string);
-      let response_json = await response.json();
-      set_data(response_json);
+      await query_selected_sensors(modal_table_dict, cache_size, set_selected_sensor_data);
       set_time_brush_1(start_date.getTime());
       set_time_brush_2(end_date.getTime())
       set_is_loading(false);
@@ -84,17 +80,13 @@ function App() {
           let cache_size = get_cache_size(time_brush_1, time_brush_2);
           set_cache_dimensions(cache_size);
           set_time_brush_image({ start: new Date(time_brush_1), end: new Date(time_brush_2) });
-          let fetch_string = `http://${host_string}/bluerock/adaptive_all_history/state/${cache_size["start"].toISOString()}/${cache_size["end"].toISOString()}`;
-          let response = await fetch(fetch_string);
-          let response_json = await response.json();
 
           // Only update the cache if we haven't received a time that's later
           if (cache_size["end"].getTime() > last_received_time) {
             set_last_received_time(cache_size["end"].getTime());
-            set_data(response_json);
+            await query_selected_sensors(modal_table_dict, cache_size, set_selected_sensor_data);
           }
 
-          await query_selected_sensors(modal_table_dict, cache_size, set_selected_sensor_data);
         }
         update();
       }
@@ -106,12 +98,8 @@ function App() {
     set_is_loading(true);
     let cache_size = get_cache_size(time_brush_1, time_brush_2);
     set_cache_dimensions(cache_size);
-    let fetch_string = `http://${host_string}/bluerock/adaptive_all_history/state/${cache_size["start"].toISOString()}/${cache_size["end"].toISOString()}`;
-    let response = await fetch(fetch_string);
-    let response_json = await response.json();
-    set_data(response_json);
-    set_is_loading(false);
     await query_selected_sensors(modal_table_dict, cache_size, set_selected_sensor_data);
+    set_is_loading(false);
   }
 
   const mychart1 = <MyChart
@@ -128,14 +116,14 @@ function App() {
     on_final_window_resize={on_window_resize}
   />
 
-  let charts = Object.keys(selected_sensor_data).map((key) => {
+  let charts = get_selected_sensors(modal_table_dict, "display").map((key) => {
     return <MyChart
       data={selected_sensor_data[key]}
       width={700}
       height={300}
-      loading={is_loading}
+      loading={is_loading || ! selected_sensor_data.hasOwnProperty(key)}
       hide_closest_point={false}
-      title={key}
+      title={modal_table_dict[key]["human_readible_name"]}
       time_brush_1={time_brush_1}
       set_time_brush_1={set_time_brush_1}
       time_brush_2={time_brush_2}

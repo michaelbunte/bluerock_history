@@ -38,8 +38,7 @@ const create_modal_table = (
                     }));
 
                     let response = await fetch(`http://${host_string}/bluerock/adaptive_all_history/${row["internal_data_name"]}/${new Date('1980')}/${new Date('2100')}`);
-                    let current = await fetch(
-                        `http://${host_string}/${system_name}/sensor_most_recent/${row["internal_data_name"]}`);
+                    let current = await fetch(`http://${host_string}/${system_name}/sensor_most_recent/${row["internal_data_name"]}`);
                     let response_json = await response.json();
                     let current_json = await current.json();
 
