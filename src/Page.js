@@ -4,6 +4,7 @@ import MyChart from './MyChart';
 import Box from './Box';
 import { SmartTable } from 'adminlte-2-react';
 import BluerockSchematic from './components/BluerockSchematic';
+import { Button, ButtonGroup } from 'adminlte-2-react';
 
 import { useState, useEffect } from 'react';
 import {
@@ -39,6 +40,7 @@ function App() {
   const [ticking, setTicking] = useState(true);
   const [is_loading, set_is_loading] = useState(false);
   const [selected_sensor_data, set_selected_sensor_data] = useState({});
+  const [playback_state, set_playback_state] = useState("paused");
 
   // initial load
   useEffect(() => {
@@ -188,10 +190,29 @@ function App() {
     pageSize={10}
     selectedRows={[]}
   />
+
+  const playback_buttons = <div>
+    <ButtonGroup>
+
+      <Button
+        text={playback_state === "paused"
+          ? <div>▶</div>
+          : <div style={{ letterSpacing: "-2px" }}>▮▮</div>}
+        onClick={
+          () => {
+            set_playback_state((prev) => prev == "paused" ? "real time" : "paused")
+          }}
+      />
+      <Button
+        text={<div style={{ letterSpacing: "-3px" }}>▶▶</div>}
+        onClick={() => { set_playback_state("10 minutes/second") }} />
+    </ButtonGroup>
+  </div>
   return (
     <div>
       <Box contents={charts} />
-      <Box contents={<BluerockSchematic md={modal_table_dict}/>} />
+      <Box contents={<BluerockSchematic md={modal_table_dict} />} />
+      <Box contents={playback_buttons} />
       <Box contents={sensor_table} />
     </div>
   );
