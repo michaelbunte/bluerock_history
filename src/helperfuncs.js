@@ -198,26 +198,27 @@ class PlaybackSpeed {
             1000,
             10000,
         ]
+
+        this.is_loading = false;
     }
     
     next_speed() {
         this.speed_index = (this.speed_index + 1) % this.sensor_speeds.length; 
     }
 
-    get_current_speed() {
-        return this.sensor_speeds[this.speed_index];
-    }
+    get_current_speed() { return this.sensor_speeds[this.speed_index]; }
+    toggle_paused() { this.paused = !this.paused;}
+    get_paused() { return this.paused; }
 
-    toggle_paused() {
-        this.paused = !this.paused;
-    }
+    set_loading() { this.loading = true; }
+    set_not_loading() { this.loading = false; }
 
-    get_paused() {
-        return this.paused;
+    get_loading() { return this.loading; }
+
+    get_range() {
+        return this.get_current_speed() * 100000000;
     }
 }
-
-
 export {
     create_modal_table,
     initialize_modal_table_dict,

@@ -44,6 +44,30 @@ function App() {
   const [selected_sensor_data, set_selected_sensor_data] = useState({});
   // const [paused, set_paused] = useState(true);
   const [playback_speed, set_playback_speed] = useState(new PlaybackSpeed());
+  const [all_sensors_cache, set_all_sensors_cache] = useState([]);
+
+  const current_time = () => (time_brush_1 + time_brush_2) / 2;
+
+  const update_cache_if_needed = async () => {
+    function need_to_reupdate_cache() {
+      if (all_sensors_cache.length == 0) { return true; }
+      let start_time = all_sensors_cache[0]["plctime"];
+      let end_time = all_sensors_cache[all_sensors_cache.length - 1]["plctime"];
+      let threefourthstime = 3 * (start_time + end_time) / 4;
+      if (current_time() >= threefourthstime) { return true; }
+      return false;
+    }
+    if (!need_to_reupdate_cache()) { return; }
+    set_playback_speed((prev) => { prev.set_loading(); return prev; })
+    let query_string = `http://${host_string}/bluerock/adaptive_all_sensors/`
+    + `${new Date(current_time()).toISOString()}/${new Date(current_time() + playback_speed.get_range()).toISOString()}`;
+    let response = await fetch(query_string);
+    let response_json = await response.json();
+    set_all_sensors_cache(response_json);
+    console.log(query_string)
+    console.log(response_json)
+    set_playback_speed((prev) => { prev.set_not_loading(); return prev; });
+  }
 
   // initial load
   useEffect(() => {
@@ -178,34 +202,33 @@ function App() {
     selectedRows={[]}
   />
 
+  const play_button_hit = () => {
+    set_playback_speed((prev) => { prev.toggle_paused(); return prev; });
+    if (playback_speed.get_paused()) { return; }
+
+    update_cache_if_needed();
+  }
+
   const playback_buttons = <div>
-    <div style={{display: "flex", alignItems: "center"}}>
+    <div style={{ display: "flex", alignItems: "center" }}>
       <ButtonGroup>
         <Button
           text={playback_speed.get_paused()
             ? <div>▶</div>
             : <div style={{ letterSpacing: "-2px" }}>▮▮</div>}
-          onClick={
-            () => {
-              set_playback_speed((prev) =>{ prev.toggle_paused(); return prev;});
-              
-              async function fff() {
-                let response = await fetch(`http://${host_string}/bluerock/adaptive_all_sensors/${new Date('2021-02-15')}/${new Date('2021-02-16')}`);
-                let response_json = await response.json();
-                console.log(response_json);
-              }
-              fff();
-            }}
+          onClick={play_button_hit}
         />
         <Button
           text={<div style={{ letterSpacing: "-3px" }}>▶▶</div>}
-          onClick={() => { set_playback_speed(prev=>{prev.next_speed(); return prev;}) }} />
+          onClick={() => { set_playback_speed(prev => { prev.next_speed(); return prev; }) }} />
       </ButtonGroup>
-      <div style={{padding: "0px 20px"}}>
-        {playback_speed.get_paused() ? "paused" : playback_speed.get_current_speed() }
+      <div style={{ padding: "0px 20px" }}>
+        {playback_speed.get_paused() ? "paused" : playback_speed.get_current_speed()}
       </div>
     </div>
   </div>
+
+
   return (
     <div>
       <Box contents={charts} />
