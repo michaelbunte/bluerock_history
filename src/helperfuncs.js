@@ -156,11 +156,18 @@ async function query_selected_sensors(
     set_selected_sensor_data(new_selected_sensor_data);
 }
 
+const get_value_unit_string = (sensor_name, modal_table_dict) => {
+    const current_value = modal_table_dict.get(sensor_name, "current_value");
+    return `${current_value === undefined ? "" : current_value} `
+        + `${modal_table_dict.get(sensor_name, "units")}`
+}
+
 export {
     create_modal_table,
     initialize_modal_table_dict,
     ChartHolder,
     update_selected_sensor,
     get_selected_sensors,
-    query_selected_sensors
+    query_selected_sensors,
+    get_value_unit_string
 };

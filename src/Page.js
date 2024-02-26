@@ -3,6 +3,7 @@ import './App.css';
 import MyChart from './MyChart';
 import Box from './Box';
 import { SmartTable } from 'adminlte-2-react';
+import BluerockSchematic from './components/BluerockSchematic';
 
 import { useState, useEffect } from 'react';
 import {
@@ -190,6 +191,7 @@ function App() {
   return (
     <div>
       <Box contents={charts} />
+      <Box contents={<BluerockSchematic md={modal_table_dict}/>} />
       <Box contents={sensor_table} />
     </div>
   );
