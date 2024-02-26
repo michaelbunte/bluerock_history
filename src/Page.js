@@ -121,7 +121,7 @@ function App() {
       data={selected_sensor_data[key]}
       width={700}
       height={300}
-      loading={is_loading || ! selected_sensor_data.hasOwnProperty(key)}
+      loading={is_loading || !selected_sensor_data.hasOwnProperty(key)}
       hide_closest_point={false}
       title={modal_table_dict[key]["human_readible_name"]}
       time_brush_1={time_brush_1}
@@ -152,9 +152,20 @@ function App() {
             e.target.checked,
             "display"
           );
-          const update_sensors = async ()=> {
+          const update_sensors = async () => {
             let cache_size = get_cache_size(time_brush_1, time_brush_2);
-            await query_selected_sensors(modal_table_dict, cache_size, set_selected_sensor_data);
+            set_is_loading(true);
+            
+            let updated_modal_table_dict = {
+              ...modal_table_dict,
+              [key]: {
+                ...modal_table_dict[key],
+                is_selected_display: e.target.checked
+              }
+            };
+
+            await query_selected_sensors(updated_modal_table_dict, cache_size, set_selected_sensor_data);
+            set_is_loading(false);
           };
           update_sensors();
         }}

@@ -94,6 +94,7 @@ function ChartHolder({
     </div>
 }
 
+
 function update_selected_sensor(
     set_modal_table_dict,
     sensor_internal_name,
