@@ -146,12 +146,17 @@ function App() {
       "selectbox_display": <input
         type="checkbox"
         onChange={(e) => {
+          if (e.target.checked && get_selected_sensors(modal_table_dict, "display").length >= 5) {
+            window.confirm("Only 5 charts at a time can be displayed");
+            return;
+          }
+
           update_selected_sensor(
             set_modal_table_dict,
             key,
             e.target.checked,
             "display"
-          );
+            );
           const update_sensors = async () => {
             let cache_size = get_cache_size(time_brush_1, time_brush_2);
             set_is_loading(true);
@@ -163,7 +168,6 @@ function App() {
                 is_selected_display: e.target.checked
               }
             };
-
             await query_selected_sensors(updated_modal_table_dict, cache_size, set_selected_sensor_data);
             set_is_loading(false);
           };
@@ -174,7 +178,6 @@ function App() {
     }))
     .filter(a => a["sensor"] !== undefined && a["sensor"] !== "")
     .sort((a, b) => a["sensor"].localeCompare(b["sensor"]));
-
 
   const sensor_table = <SmartTable
     data={sensor_table_data}
