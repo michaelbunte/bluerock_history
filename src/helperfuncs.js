@@ -101,7 +101,7 @@ function update_selected_sensor(
     is_selected,
     select_type // display || download
 ) {
-    if(select_type == "display") {
+    if (select_type == "display") {
         set_modal_table_dict((prev) => ({
             ...prev,
             [sensor_internal_name]: {
@@ -124,15 +124,36 @@ function get_selected_sensors(
     modal_table_dict,
     select_type, // display || download
 ) {
-    return Object.keys(modal_table_dict).filter((key)=>{
+    return Object.keys(modal_table_dict).filter((key) => {
         try {
-            if(select_type === "display") {
+            if (select_type === "display") {
                 return modal_table_dict[key]["is_selected_display"];
             } else if (select_type === "download") {
                 return modal_table_dict[key]["is_selected_display"];
             }
-        } catch(e) {return false; }
+        } catch (e) { return false; }
     })
+}
+
+async function query_selected_sensors(
+    modal_table_dict,
+    cache_size,
+    set_selected_sensor_data
+) {
+    const selected_sensors = get_selected_sensors(modal_table_dict, "display");
+    const fetches = selected_sensors.map(selected_sensor => {
+        return fetch(`http://${host_string}/bluerock/adaptive_all_history/${selected_sensor}/${cache_size["start"].toISOString()}/${cache_size["end"].toISOString()}`);
+    });
+
+    const responses = await Promise.all(fetches);
+
+    const new_selected_sensor_data = {};
+    for (let ind = 0; ind < responses.length; ind++) {
+        const selected_sensor = selected_sensors[ind];
+        const response = responses[ind];
+        new_selected_sensor_data[selected_sensor] = await response.json();
+    }
+    set_selected_sensor_data(new_selected_sensor_data);
 }
 
 export {
@@ -140,5 +161,6 @@ export {
     initialize_modal_table_dict,
     ChartHolder,
     update_selected_sensor,
-    get_selected_sensors
+    get_selected_sensors,
+    query_selected_sensors
 };

@@ -10,7 +10,8 @@ import {
   create_modal_table,
   update_selected_sensor,
   ChartHolder,
-  get_selected_sensors
+  get_selected_sensors,
+  query_selected_sensors
 } from './helperfuncs';
 
 let host_string = "ec2-54-215-192-153.us-west-1.compute.amazonaws.com:5001";
@@ -27,7 +28,7 @@ function get_cache_size(brush_1, brush_2) {
 function App() {
   const [modal_table_dict, set_modal_table_dict] = useState(initialize_modal_table_dict());
   const [current_modal_data, set_current_modal_data] = useState([]);
-  const [data, set_data] = useState([[1613404800000, 0], [1613404801000, 0], [1613404802000]]);
+  const [data, set_data] = useState([[]]);
   const [time_brush_1, set_time_brush_1] = useState(1611296444000);
   const [time_brush_2, set_time_brush_2] = useState(1613974844000);
   const [last_received_time, set_last_received_time] = useState(0);
@@ -36,7 +37,7 @@ function App() {
   const [current_modal_string, set_current_modal_string] = useState("");
   const [ticking, setTicking] = useState(true);
   const [is_loading, set_is_loading] = useState(false);
-
+  const [selected_sensor_data, set_selected_sensor_data] = useState({});
 
   // initial load
   useEffect(() => {
@@ -92,6 +93,8 @@ function App() {
             set_last_received_time(cache_size["end"].getTime());
             set_data(response_json);
           }
+
+          await query_selected_sensors(modal_table_dict, cache_size, set_selected_sensor_data);
         }
         update();
       }
@@ -108,6 +111,7 @@ function App() {
     let response_json = await response.json();
     set_data(response_json);
     set_is_loading(false);
+    await query_selected_sensors(modal_table_dict, cache_size, set_selected_sensor_data);
   }
 
   const mychart1 = <MyChart
@@ -124,11 +128,23 @@ function App() {
     on_final_window_resize={on_window_resize}
   />
 
-  let charts = <div>
-    <ChartHolder chart={mychart1} />
-    <ChartHolder chart={mychart1} />
-  </div>;
+  let charts = Object.keys(selected_sensor_data).map((key) => {
+    return <MyChart
+      data={selected_sensor_data[key]}
+      width={700}
+      height={300}
+      loading={is_loading}
+      hide_closest_point={false}
+      title={key}
+      time_brush_1={time_brush_1}
+      set_time_brush_1={set_time_brush_1}
+      time_brush_2={time_brush_2}
+      set_time_brush_2={set_time_brush_2}
+      on_final_window_resize={on_window_resize}
+    />
+  })
 
+  console.log(selected_sensor_data)
 
   const tableColumns = [
     { title: 'Sensor', data: 'sensor' },
@@ -137,22 +153,29 @@ function App() {
   ];
 
   let sensor_table_data = Object.keys(modal_table_dict)
-    .map(key => ({ 
+    .map(key => ({
       "sensor": modal_table_dict[key]["human_readible_name"],
-      "selectbox_display": <input 
+      "selectbox_display": <input
         type="checkbox"
-        onChange={(e)=>update_selected_sensor(
-          set_modal_table_dict,
-          key,
-          e.target.checked,
-          "display"
-        )}
+        onChange={(e) => {
+          update_selected_sensor(
+            set_modal_table_dict,
+            key,
+            e.target.checked,
+            "display"
+          );
+          const update_sensors = async ()=> {
+            let cache_size = get_cache_size(time_brush_1, time_brush_2);
+            await query_selected_sensors(modal_table_dict, cache_size, set_selected_sensor_data);
+          };
+          update_sensors();
+        }}
         checked={modal_table_dict[key]["is_selected"]}
-        />
+      />
     }))
-    .filter(a=> a["sensor"] !== undefined && a["sensor"] !== "")
+    .filter(a => a["sensor"] !== undefined && a["sensor"] !== "")
     .sort((a, b) => a["sensor"].localeCompare(b["sensor"]));
-  
+
 
   const sensor_table = <SmartTable
     data={sensor_table_data}
@@ -167,7 +190,6 @@ function App() {
       <Box contents={charts} />
       <Box contents={sensor_table} />
     </div>
-
   );
 }
 
