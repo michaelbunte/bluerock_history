@@ -40,7 +40,8 @@ function App() {
   const [ticking, setTicking] = useState(true);
   const [is_loading, set_is_loading] = useState(false);
   const [selected_sensor_data, set_selected_sensor_data] = useState({});
-  const [playback_state, set_playback_state] = useState("paused");
+  const [paused, set_paused] = useState(true);
+  const [playback_speed, set_playback_speed] = useState(1);
 
   // initial load
   useEffect(() => {
@@ -192,21 +193,25 @@ function App() {
   />
 
   const playback_buttons = <div>
-    <ButtonGroup>
-
-      <Button
-        text={playback_state === "paused"
-          ? <div>▶</div>
-          : <div style={{ letterSpacing: "-2px" }}>▮▮</div>}
-        onClick={
-          () => {
-            set_playback_state((prev) => prev == "paused" ? "real time" : "paused")
-          }}
-      />
-      <Button
-        text={<div style={{ letterSpacing: "-3px" }}>▶▶</div>}
-        onClick={() => { set_playback_state("10 minutes/second") }} />
-    </ButtonGroup>
+    <div style={{display: "flex", alignItems: "center"}}>
+      <ButtonGroup>
+        <Button
+          text={paused
+            ? <div>▶</div>
+            : <div style={{ letterSpacing: "-2px" }}>▮▮</div>}
+          onClick={
+            () => {
+              set_paused((prev) => prev ? false : true);
+            }}
+        />
+        <Button
+          text={<div style={{ letterSpacing: "-3px" }}>▶▶</div>}
+          onClick={() => { set_paused("10 minutes/second") }} />
+      </ButtonGroup>
+      <div style={{padding: "0px 20px"}}>
+        {paused ? "paused" : playback_speed }
+      </div>
+    </div>
   </div>
   return (
     <div>
