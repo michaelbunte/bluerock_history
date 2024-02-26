@@ -156,11 +156,11 @@ function App() {
             key,
             e.target.checked,
             "display"
-            );
+          );
           const update_sensors = async () => {
             let cache_size = get_cache_size(time_brush_1, time_brush_2);
             set_is_loading(true);
-            
+
             let updated_modal_table_dict = {
               ...modal_table_dict,
               [key]: {
