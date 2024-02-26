@@ -1,4 +1,5 @@
-let host_string = "ec2-54-215-192-153.us-west-1.compute.amazonaws.com:5001";
+// let host_string = "ec2-54-215-192-153.us-west-1.compute.amazonaws.com:5001";
+let host_string = "localhost:5001";
 
 const initialize_modal_table_dict = () => {
     let modal_table_dict = {
@@ -162,6 +163,61 @@ const get_value_unit_string = (sensor_name, modal_table_dict) => {
         + `${modal_table_dict.get(sensor_name, "units")}`
 }
 
+function binary_search_cache(
+    cache,
+    target_date // should be an ISO string
+) {
+
+    if (cache.length === 0) { return -1; }
+
+    let start_i = 0;
+    let end_i = cache.length - 1;
+    let target_date_obj = new Date(target_date);
+    while (Math.abs(start_i - end_i) > 1) {
+        let middle_i = Math.floor((start_i + end_i) / 2);
+        let middle_i_date = new Date(cache[middle_i]["plctime"]);
+
+        if (middle_i_date <= target_date_obj) {
+            start_i = middle_i;
+        } else {
+            end_i = middle_i;
+        }
+    }
+    return start_i < 2 || start_i > cache.length - 3 ? -1 : start_i;
+}
+
+class PlaybackSpeed {
+    constructor() {
+        this.paused = true;
+
+        this.speed_index = 0;
+        this.sensor_speeds = [
+            1,
+            10,
+            100,
+            1000,
+            10000,
+        ]
+    }
+    
+    next_speed() {
+        this.speed_index = (this.speed_index + 1) % this.sensor_speeds.length; 
+    }
+
+    get_current_speed() {
+        return this.sensor_speeds[this.speed_index];
+    }
+
+    toggle_paused() {
+        this.paused = !this.paused;
+    }
+
+    get_paused() {
+        return this.paused;
+    }
+}
+
+
 export {
     create_modal_table,
     initialize_modal_table_dict,
@@ -169,5 +225,7 @@ export {
     update_selected_sensor,
     get_selected_sensors,
     query_selected_sensors,
-    get_value_unit_string
+    get_value_unit_string,
+    binary_search_cache,
+    PlaybackSpeed
 };

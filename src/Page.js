@@ -13,11 +13,13 @@ import {
   update_selected_sensor,
   ChartHolder,
   get_selected_sensors,
-  query_selected_sensors
+  query_selected_sensors,
+  binary_search_cache,
+  PlaybackSpeed
 } from './helperfuncs';
 
-let host_string = "ec2-54-215-192-153.us-west-1.compute.amazonaws.com:5001";
-// let host_string = "localhost:5001";
+// let host_string = "ec2-54-215-192-153.us-west-1.compute.amazonaws.com:5001";
+let host_string = "localhost:5001";
 
 function get_cache_size(brush_1, brush_2) {
   let brush_1_date = new Date(brush_1);
@@ -40,8 +42,8 @@ function App() {
   const [ticking, setTicking] = useState(true);
   const [is_loading, set_is_loading] = useState(false);
   const [selected_sensor_data, set_selected_sensor_data] = useState({});
-  const [paused, set_paused] = useState(true);
-  const [playback_speed, set_playback_speed] = useState(1);
+  // const [paused, set_paused] = useState(true);
+  const [playback_speed, set_playback_speed] = useState(new PlaybackSpeed());
 
   // initial load
   useEffect(() => {
@@ -106,20 +108,6 @@ function App() {
     set_is_loading(false);
   }
 
-  const mychart1 = <MyChart
-    data={data}
-    width={700}
-    height={300}
-    loading={is_loading}
-    hide_closest_point={false}
-    title="this is an example title"
-    time_brush_1={time_brush_1}
-    set_time_brush_1={set_time_brush_1}
-    time_brush_2={time_brush_2}
-    set_time_brush_2={set_time_brush_2}
-    on_final_window_resize={on_window_resize}
-  />
-
   let charts = get_selected_sensors(modal_table_dict, "display").map((key) => {
     return <MyChart
       data={selected_sensor_data[key]}
@@ -135,8 +123,6 @@ function App() {
       on_final_window_resize={on_window_resize}
     />
   })
-
-  console.log(selected_sensor_data)
 
   const tableColumns = [
     { title: 'Sensor', data: 'sensor' },
@@ -196,20 +182,27 @@ function App() {
     <div style={{display: "flex", alignItems: "center"}}>
       <ButtonGroup>
         <Button
-          text={paused
+          text={playback_speed.get_paused()
             ? <div>▶</div>
             : <div style={{ letterSpacing: "-2px" }}>▮▮</div>}
           onClick={
             () => {
-              set_paused((prev) => prev ? false : true);
+              set_playback_speed((prev) =>{ prev.toggle_paused(); return prev;});
+              
+              async function fff() {
+                let response = await fetch(`http://${host_string}/bluerock/adaptive_all_sensors/${new Date('2021-02-15')}/${new Date('2021-02-16')}`);
+                let response_json = await response.json();
+                console.log(response_json);
+              }
+              fff();
             }}
         />
         <Button
           text={<div style={{ letterSpacing: "-3px" }}>▶▶</div>}
-          onClick={() => { set_paused("10 minutes/second") }} />
+          onClick={() => { set_playback_speed(prev=>{prev.next_speed(); return prev;}) }} />
       </ButtonGroup>
       <div style={{padding: "0px 20px"}}>
-        {paused ? "paused" : playback_speed }
+        {playback_speed.get_paused() ? "paused" : playback_speed.get_current_speed() }
       </div>
     </div>
   </div>
