@@ -8,7 +8,9 @@ import { useState, useEffect } from 'react';
 import {
   initialize_modal_table_dict,
   create_modal_table,
-  ChartHolder
+  update_selected_sensor,
+  ChartHolder,
+  get_selected_sensors
 } from './helperfuncs';
 
 let host_string = "ec2-54-215-192-153.us-west-1.compute.amazonaws.com:5001";
@@ -130,27 +132,28 @@ function App() {
 
   const tableColumns = [
     { title: 'Sensor', data: 'sensor' },
-    { title: '', data: 'selectbox' },
+    { title: 'Display', data: 'selectbox_display' },
+    { title: 'Download', data: 'selectbox_download' },
   ];
 
   let sensor_table_data = Object.keys(modal_table_dict)
     .map(key => ({ 
       "sensor": modal_table_dict[key]["human_readible_name"],
-      "selectbox": <input 
+      "selectbox_display": <input 
         type="checkbox"
-        onChange={(e)=>set_modal_table_dict((prev)=>({
-          ...prev,
-          [key]:{
-            ...prev[key],
-            is_selected: e.target.checked
-          }
-        }))}
+        onChange={(e)=>update_selected_sensor(
+          set_modal_table_dict,
+          key,
+          e.target.checked,
+          "display"
+        )}
         checked={modal_table_dict[key]["is_selected"]}
         />
     }))
     .filter(a=> a["sensor"] !== undefined && a["sensor"] !== "")
     .sort((a, b) => a["sensor"].localeCompare(b["sensor"]));
-  console.log(modal_table_dict)
+  
+
   const sensor_table = <SmartTable
     data={sensor_table_data}
     columns={tableColumns}

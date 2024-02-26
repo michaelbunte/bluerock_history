@@ -27,11 +27,12 @@ const create_modal_table = (
             abbreviated_name: row["abbreviated_name"],
             current_value: undefined,
             units: row["units"],
-            is_selected: false,
+            is_selected_display: false,
+            is_selected_download: false,
             on_click: async () => {
                 set_current_modal(row["human_readible_name"]);
                 try {
-                    set_current_modal_data( prev => ({
+                    set_current_modal_data(prev => ({
                         ...prev,
                         loading: true
                     }));
@@ -41,13 +42,13 @@ const create_modal_table = (
                         `http://${host_string}/${system_name}/sensor_most_recent/${row["internal_data_name"]}`);
                     let response_json = await response.json();
                     let current_json = await current.json();
-                    
-                    if (row["units"] === "boolean"){
+
+                    if (row["units"] === "boolean") {
                         response_json = await response_json.map((tup) => [tup[0], tup[1] ? 1 : 0]);
                     }
 
                     set_current_modal_data((prev) => ({
-                        ...prev, 
+                        ...prev,
                         loading: false,
                         time_series_data: response_json,
                         current_data: current_json,
@@ -63,10 +64,10 @@ const create_modal_table = (
     return modal_table_dict;
 }
 
-function ChartHolder({ 
+function ChartHolder({
     chart,
-    on_x = ()=>{}
- }) {
+    on_x = () => { }
+}) {
     return <div style={{
         background: "white",
         padding: "2px",
@@ -83,7 +84,7 @@ function ChartHolder({
             padding: "20px",
             cursor: "pointer"
         }}
-        onClick={on_x}
+            onClick={on_x}
         >
             ×
         </div>
@@ -94,8 +95,50 @@ function ChartHolder({
     </div>
 }
 
+function update_selected_sensor(
+    set_modal_table_dict,
+    sensor_internal_name,
+    is_selected,
+    select_type // display || download
+) {
+    if(select_type == "display") {
+        set_modal_table_dict((prev) => ({
+            ...prev,
+            [sensor_internal_name]: {
+                ...prev[sensor_internal_name],
+                is_selected_display: is_selected
+            }
+        }));
+    } else if (select_type == "download") {
+        set_modal_table_dict((prev) => ({
+            ...prev,
+            [sensor_internal_name]: {
+                ...prev[sensor_internal_name],
+                is_selected_download: is_selected
+            }
+        }));
+    }
+}
+
+function get_selected_sensors(
+    modal_table_dict,
+    select_type, // display || download
+) {
+    return Object.keys(modal_table_dict).filter((key)=>{
+        try {
+            if(select_type === "display") {
+                return modal_table_dict[key]["is_selected_display"];
+            } else if (select_type === "download") {
+                return modal_table_dict[key]["is_selected_display"];
+            }
+        } catch(e) {return false; }
+    })
+}
+
 export {
     create_modal_table,
     initialize_modal_table_dict,
-    ChartHolder
+    ChartHolder,
+    update_selected_sensor,
+    get_selected_sensors
 };
