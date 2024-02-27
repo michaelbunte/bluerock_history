@@ -177,7 +177,7 @@ function App() {
       "sensor": modal_table_dict[key]["human_readible_name"],
       "selectbox_display": <input
         type="checkbox"
-        onChange={(e) => {
+        onClick={(e) => {
           if (e.target.checked && get_selected_sensors(modal_table_dict, "display").length >= 5) {
             window.confirm("Only 5 charts at a time can be displayed");
             return;
@@ -205,7 +205,7 @@ function App() {
           };
           update_sensors();
         }}
-        checked={modal_table_dict[key]["is_selected"]}
+        checked={modal_table_dict.get(key, "is_selected_display")}
       />
     }))
     .filter(a => a["sensor"] !== undefined && a["sensor"] !== "")
@@ -255,7 +255,7 @@ function App() {
         {!ticking ? "paused" : playback_speed.get_current_speed()}
       </div>
       <div style={{ paddingLeft: "20px" }}>
-        <div style={{fontWeight: "bold"}}>Target Time:</div>
+        <div style={{ fontWeight: "bold" }}>Target Time:</div>
         {get_full_time_string(new Date(current_time()))}
       </div>
       <div style={{ paddingLeft: "20px" }}>
@@ -264,7 +264,7 @@ function App() {
           new Date(current_time()).toISOString())}
       </div>
       <div style={{ paddingLeft: "20px" }}>
-        <div style={{fontWeight: "bold"}}>Displayed Time:</div>
+        <div style={{ fontWeight: "bold" }}>Displayed Time:</div>
         {get_full_time_string(new Date(currently_displayed_time))}
       </div>
     </div>
@@ -273,7 +273,7 @@ function App() {
 
   return (
     <div>
-      <div style={{ textAlign: "center", fontSize: "3rem", fontWeight: "bold", margin: "9px 0px 0px 0px"}}>
+      <div style={{ textAlign: "center", fontSize: "3rem", fontWeight: "bold", margin: "9px 0px 0px 0px" }}>
         Historical Bluerock Data
       </div>
       <div style={{ display: "flex", justifyContent: "center" }}>
