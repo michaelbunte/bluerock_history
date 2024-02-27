@@ -190,13 +190,12 @@ class PlaybackSpeed {
     constructor() {
         this.paused = true;
 
-        this.speed_index = 0;
+        this.speed_index = 2;
         this.sensor_speeds = [
-            1,
-            10,
-            100,
             1000,
             10000,
+            100000,
+            1000000,
         ]
 
         this.is_loading = false;
@@ -216,7 +215,7 @@ class PlaybackSpeed {
     get_loading() { return this.loading; }
 
     get_range() {
-        return this.get_current_speed() * 100000000;
+        return this.get_current_speed() * 1000;
     }
 }
 export {

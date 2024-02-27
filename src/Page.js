@@ -104,7 +104,7 @@ function App() {
       if (!ticking || is_loading) { return; }
       set_time_brush_1(prev => prev + 100000);
       set_time_brush_2(prev => prev + 100000);
-
+      update_cache_if_needed();
       if (time_brush_2 > (time_brush_image["end"].getTime() + cache_dimensions["end"].getTime()) / 2) {
         const update = async () => {
           let cache_size = get_cache_size(time_brush_1, time_brush_2);
@@ -209,6 +209,14 @@ function App() {
     update_cache_if_needed();
   }
 
+  let currently_displayed_time = undefined;
+  
+  try {
+    currently_displayed_time = all_sensors_cache[binary_search_cache(
+    all_sensors_cache, 
+    new Date(current_time()).toISOString())]["plctime"];
+  } catch(e){};
+
   const playback_buttons = <div>
     <div style={{ display: "flex", alignItems: "center" }}>
       <ButtonGroup>
@@ -222,8 +230,19 @@ function App() {
           text={<div style={{ letterSpacing: "-3px" }}>▶▶</div>}
           onClick={() => { set_playback_speed(prev => { prev.next_speed(); return prev; }) }} />
       </ButtonGroup>
-      <div style={{ padding: "0px 20px" }}>
+      <div style={{ paddingLeft: "20px" }}>
         {playback_speed.get_paused() ? "paused" : playback_speed.get_current_speed()}
+      </div>
+      <div style={{ paddingLeft: "20px" }}>
+        {new Date(current_time()).toISOString()}
+      </div>
+      <div style={{ paddingLeft: "20px" }}>
+        {binary_search_cache(
+          all_sensors_cache, 
+          new Date(current_time()).toISOString())}
+      </div>
+      <div style={{ paddingLeft: "20px" }}>
+        {currently_displayed_time}  
       </div>
     </div>
   </div>
