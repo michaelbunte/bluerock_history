@@ -218,6 +218,24 @@ class PlaybackSpeed {
         return this.get_current_speed() * 1000;
     }
 }
+
+function update_current_sensor_values(
+    set_modal_table_dict,
+    current_data
+) {
+    if(set_modal_table_dict == null || current_data == null) { return; }
+    set_modal_table_dict(prev=>{
+        Object.keys(current_data).map(
+            key => {
+                try {
+                    prev[key]["current_value"] = current_data[key]
+                } catch (e) {}
+                return 0;
+            })
+        return prev;
+    })
+}
+
 export {
     create_modal_table,
     initialize_modal_table_dict,
@@ -227,5 +245,6 @@ export {
     query_selected_sensors,
     get_value_unit_string,
     binary_search_cache,
+    update_current_sensor_values,
     PlaybackSpeed
 };

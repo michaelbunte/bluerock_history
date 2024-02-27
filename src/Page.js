@@ -15,6 +15,7 @@ import {
   get_selected_sensors,
   query_selected_sensors,
   binary_search_cache,
+  update_current_sensor_values,
   PlaybackSpeed
 } from './helperfuncs';
 
@@ -60,7 +61,7 @@ function App() {
     if (!need_to_reupdate_cache()) { return; }
     set_playback_speed((prev) => { prev.set_loading(); return prev; })
     let query_string = `http://${host_string}/bluerock/adaptive_all_sensors/`
-    + `${new Date(current_time()).toISOString()}/${new Date(current_time() + playback_speed.get_range()).toISOString()}`;
+      + `${new Date(current_time()).toISOString()}/${new Date(current_time() + playback_speed.get_range()).toISOString()}`;
     let response = await fetch(query_string);
     let response_json = await response.json();
     set_all_sensors_cache(response_json);
@@ -102,8 +103,20 @@ function App() {
   useEffect(() => {
     const timer = setTimeout(() => {
       if (!ticking || is_loading) { return; }
-      set_time_brush_1(prev => prev + 100000);
-      set_time_brush_2(prev => prev + 100000);
+
+      try {
+        let target_index = binary_search_cache(
+          all_sensors_cache,
+          new Date(current_time()).toISOString()
+        );
+        update_current_sensor_values(
+          set_modal_table_dict,
+          all_sensors_cache[target_index]
+        );
+      } catch(e) {};
+      
+      set_time_brush_1(prev => prev + playback_speed.get_current_speed());
+      set_time_brush_2(prev => prev + playback_speed.get_current_speed());
       update_cache_if_needed();
       if (time_brush_2 > (time_brush_image["end"].getTime() + cache_dimensions["end"].getTime()) / 2) {
         const update = async () => {
@@ -116,13 +129,12 @@ function App() {
             set_last_received_time(cache_size["end"].getTime());
             await query_selected_sensors(modal_table_dict, cache_size, set_selected_sensor_data);
           }
-
         }
         update();
       }
     }, 0.333e3)
     return () => clearTimeout(timer)
-  }, [time_brush_1, time_brush_2, ticking, is_loading]);
+  }, [time_brush_1, time_brush_2, ticking, is_loading, playback_speed]);
 
   const on_window_resize = async () => {
     set_is_loading(true);
@@ -203,19 +215,22 @@ function App() {
   />
 
   const play_button_hit = () => {
-    set_ticking(prev=>!prev);
+    set_ticking(prev => !prev);
     if (!ticking) { return; }
 
     update_cache_if_needed();
   }
 
   let currently_displayed_time = undefined;
-  
+
   try {
-    currently_displayed_time = all_sensors_cache[binary_search_cache(
-    all_sensors_cache, 
-    new Date(current_time()).toISOString())]["plctime"];
-  } catch(e){};
+    let target_index = binary_search_cache(
+      all_sensors_cache,
+      new Date(current_time()).toISOString()
+    );
+
+    currently_displayed_time = all_sensors_cache[target_index]["plctime"];
+  } catch (e) { };
 
   const playback_buttons = <div>
     <div style={{ display: "flex", alignItems: "center" }}>
@@ -238,11 +253,11 @@ function App() {
       </div>
       <div style={{ paddingLeft: "20px" }}>
         {binary_search_cache(
-          all_sensors_cache, 
+          all_sensors_cache,
           new Date(current_time()).toISOString())}
       </div>
       <div style={{ paddingLeft: "20px" }}>
-        {currently_displayed_time}  
+        {currently_displayed_time}
       </div>
     </div>
   </div>
