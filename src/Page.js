@@ -54,19 +54,19 @@ function App() {
 
   const current_time = () => (time_brush_1 + time_brush_2) / 2;
 
-  const update_cache_if_needed = async () => {
+  const update_cache_if_needed = async (override) => {
     function need_to_reupdate_cache() {
       if (all_sensors_cache.length == 0) { return true; }
-      let start_time = all_sensors_cache[0]["plctime"];
-      let end_time = all_sensors_cache[all_sensors_cache.length - 1]["plctime"];
-      let threefourthstime = 3 * (start_time + end_time) / 4;
-      if (current_time() >= threefourthstime) { return true; }
+      let start_time_unix = new Date( all_sensors_cache[0]["plctime"]).getTime();
+      let end_time_unix = new Date(all_sensors_cache[all_sensors_cache.length - 1]["plctime"]).getTime();
+      let threefourthstime = 3 * (start_time_unix + end_time_unix) / 4;
+      if (current_time() >= threefourthstime || current_time() <= start_time_unix) { return true; }
       return false;
     }
-    if (!need_to_reupdate_cache()) { return; }
+    if (!override && !need_to_reupdate_cache() ) { return; }
     set_playback_speed((prev) => { prev.set_loading(); return prev; })
     let query_string = `http://${host_string}/bluerock/adaptive_all_sensors/`
-      + `${new Date(current_time()).toISOString()}/${new Date(current_time() + playback_speed.get_range()).toISOString()}`;
+      + `${new Date(current_time() - playback_speed.get_minor_range()).toISOString()}/${new Date(current_time() + playback_speed.get_range()).toISOString()}`;
     let response = await fetch(query_string);
     let response_json = await response.json();
     set_all_sensors_cache(response_json);
@@ -144,6 +144,7 @@ function App() {
     let cache_size = get_cache_size(time_brush_1, time_brush_2);
     set_cache_dimensions(cache_size);
     await query_selected_sensors(modal_table_dict, cache_size, set_selected_sensor_data);
+    update_cache_if_needed(true);
     set_is_loading(false);
   }
 

@@ -241,7 +241,11 @@ class PlaybackSpeed {
     get_loading() { return this.loading; }
 
     get_range() {
-        return this.get_current_speed() * 1000;
+        return this.get_current_speed() * 100;
+    }
+
+    get_minor_range() {
+        return this.get_current_speed() * 10;
     }
 }
 
