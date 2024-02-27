@@ -39,7 +39,7 @@ function App() {
   const [cache_dimensions, set_cache_dimensions] = useState({ start: new Date(), end: new Date() });
   const [time_brush_image, set_time_brush_image] = useState({ start: new Date(), end: new Date() });
   const [current_modal_string, set_current_modal_string] = useState("");
-  const [ticking, setTicking] = useState(true);
+  const [ticking, set_ticking] = useState(false);
   const [is_loading, set_is_loading] = useState(false);
   const [selected_sensor_data, set_selected_sensor_data] = useState({});
   // const [paused, set_paused] = useState(true);
@@ -203,8 +203,8 @@ function App() {
   />
 
   const play_button_hit = () => {
-    set_playback_speed((prev) => { prev.toggle_paused(); return prev; });
-    if (playback_speed.get_paused()) { return; }
+    set_ticking(prev=>!prev);
+    if (!ticking) { return; }
 
     update_cache_if_needed();
   }
@@ -221,9 +221,9 @@ function App() {
     <div style={{ display: "flex", alignItems: "center" }}>
       <ButtonGroup>
         <Button
-          text={playback_speed.get_paused()
-            ? <div>▶</div>
-            : <div style={{ letterSpacing: "-2px" }}>▮▮</div>}
+          text={ticking
+            ? <div style={{ letterSpacing: "-2px" }}>▮▮</div>
+            : <div>▶</div>}
           onClick={play_button_hit}
         />
         <Button
@@ -231,7 +231,7 @@ function App() {
           onClick={() => { set_playback_speed(prev => { prev.next_speed(); return prev; }) }} />
       </ButtonGroup>
       <div style={{ paddingLeft: "20px" }}>
-        {playback_speed.get_paused() ? "paused" : playback_speed.get_current_speed()}
+        {!ticking ? "paused" : playback_speed.get_current_speed()}
       </div>
       <div style={{ paddingLeft: "20px" }}>
         {new Date(current_time()).toISOString()}
