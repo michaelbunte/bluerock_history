@@ -267,14 +267,19 @@ function App() {
 
 
   return (
-    <div style={{ display: "flex", justifyContent: "center" }}>
-      <div>
-        <Box title="Selected Sensors" width={width * 0.4} contents={charts} />
+    <div>
+      <div style={{textAlign: "center", fontSize: "3rem", fontWeight: "bold", margin: "7px 0px 0px 0px"}}>
+        Historical Bluerock Data
       </div>
-      <div >
-        <Box width={width * 0.55} contents={<BluerockSchematic md={modal_table_dict} />} />
-        <Box width={width * 0.55} contents={playback_buttons} />
-        <Box width={width * 0.55} contents={sensor_table} />
+      <div style={{ display: "flex", justifyContent: "center" }}>
+        <div>
+          <Box title="Selected Sensors" width={width * 0.4} contents={charts} />
+        </div>
+        <div >
+          <Box width={width * 0.55} contents={<BluerockSchematic md={modal_table_dict} />} />
+          <Box width={width * 0.55} contents={playback_buttons} />
+          <Box width={width * 0.55} contents={sensor_table} />
+        </div>
       </div>
     </div>
   );

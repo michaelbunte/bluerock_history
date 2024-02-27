@@ -397,7 +397,7 @@ function ROSystem({ md }) {
             />
             <SensorIndicator
                 WaterScope x="307" y="525.5" line="right" innerText='400' outerText='12345' textDir='left' />
-            <Drain x="312" y="717.5" text="To Septic Tank" textDir="left" />
+            <Drain x="312" y="717.5" text="To Septic Tank" textDir="down" />
             <SensorIndicator WaterScope x="492" y="707.5" line="up" innerText='200' textDir='left' outerText='123456' />
             <SensorIndicator
                 x="1027.5" y="544.5" textDir='left'
@@ -570,17 +570,15 @@ function WaterDeliverSystem({ md }) {
 
 function BluerockSchematic({ md }) {
     return (
-        <svg width="100%" height="100%" viewBox="0 0 1420 780">
-            <FeedTankSystem
-                md={md}
-            />
-            <WaterDeliverSystem
-                md={md}
-            />
-            <ROSystem
-                md={md}
-            />
-            <Key />
+        <svg width="100%" height="100%" viewBox="0 0 1205 780">
+            <g transform="translate(-215,0)">
+                <svg width="1420" height="780" viewBox="0 0 1420 780">
+                    <FeedTankSystem md={md} />
+                    <WaterDeliverSystem md={md} />
+                    <ROSystem md={md} />
+                    {/* <Key /> */}
+                </svg>
+            </g>
         </svg>
     )
 }
