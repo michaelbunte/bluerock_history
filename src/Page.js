@@ -16,7 +16,8 @@ import {
   query_selected_sensors,
   binary_search_cache,
   update_current_sensor_values,
-  PlaybackSpeed
+  PlaybackSpeed,
+  useWindowDimensions
 } from './helperfuncs';
 
 // let host_string = "ec2-54-215-192-153.us-west-1.compute.amazonaws.com:5001";
@@ -31,6 +32,7 @@ function get_cache_size(brush_1, brush_2) {
 }
 
 function App() {
+  const { height, width } = useWindowDimensions();
   const [modal_table_dict, set_modal_table_dict] = useState(initialize_modal_table_dict());
   const [current_modal_data, set_current_modal_data] = useState([]);
   const [data, set_data] = useState([[]]);
@@ -65,8 +67,6 @@ function App() {
     let response = await fetch(query_string);
     let response_json = await response.json();
     set_all_sensors_cache(response_json);
-    console.log(query_string)
-    console.log(response_json)
     set_playback_speed((prev) => { prev.set_not_loading(); return prev; });
   }
 
@@ -113,8 +113,8 @@ function App() {
           set_modal_table_dict,
           all_sensors_cache[target_index]
         );
-      } catch(e) {};
-      
+      } catch (e) { };
+
       set_time_brush_1(prev => prev + playback_speed.get_current_speed());
       set_time_brush_2(prev => prev + playback_speed.get_current_speed());
       update_cache_if_needed();
@@ -144,21 +144,24 @@ function App() {
     set_is_loading(false);
   }
 
-  let charts = get_selected_sensors(modal_table_dict, "display").map((key) => {
-    return <MyChart
-      data={selected_sensor_data[key]}
-      width={700}
-      height={300}
-      loading={is_loading || !selected_sensor_data.hasOwnProperty(key)}
-      hide_closest_point={false}
-      title={modal_table_dict[key]["human_readible_name"]}
-      time_brush_1={time_brush_1}
-      set_time_brush_1={set_time_brush_1}
-      time_brush_2={time_brush_2}
-      set_time_brush_2={set_time_brush_2}
-      on_final_window_resize={on_window_resize}
-    />
-  })
+  let selected_sensors = get_selected_sensors(modal_table_dict, "display");
+  let charts = selected_sensors.length === 0
+    ? <div>Select sensors on the charts panel to display them here</div>
+    : selected_sensors.map((key) => {
+      return <MyChart
+        data={selected_sensor_data[key]}
+        width={700}
+        height={300}
+        loading={is_loading || !selected_sensor_data.hasOwnProperty(key)}
+        hide_closest_point={false}
+        title={modal_table_dict[key]["human_readible_name"]}
+        time_brush_1={time_brush_1}
+        set_time_brush_1={set_time_brush_1}
+        time_brush_2={time_brush_2}
+        set_time_brush_2={set_time_brush_2}
+        on_final_window_resize={on_window_resize}
+      />
+    })
 
   const tableColumns = [
     { title: 'Sensor', data: 'sensor' },
@@ -264,11 +267,15 @@ function App() {
 
 
   return (
-    <div>
-      <Box contents={charts} />
-      <Box contents={<BluerockSchematic md={modal_table_dict} />} />
-      <Box contents={playback_buttons} />
-      <Box contents={sensor_table} />
+    <div style={{ display: "flex", justifyContent: "center" }}>
+      <div>
+        <Box title="Selected Sensors" width={width * 0.4} contents={charts} />
+      </div>
+      <div >
+        <Box width={width * 0.55} contents={<BluerockSchematic md={modal_table_dict} />} />
+        <Box width={width * 0.55} contents={playback_buttons} />
+        <Box width={width * 0.55} contents={sensor_table} />
+      </div>
     </div>
   );
 }
