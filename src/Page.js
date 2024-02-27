@@ -17,7 +17,8 @@ import {
   binary_search_cache,
   update_current_sensor_values,
   PlaybackSpeed,
-  useWindowDimensions
+  useWindowDimensions,
+  get_full_time_string
 } from './helperfuncs';
 
 // let host_string = "ec2-54-215-192-153.us-west-1.compute.amazonaws.com:5001";
@@ -32,6 +33,8 @@ function get_cache_size(brush_1, brush_2) {
 }
 
 function App() {
+  document.body.style = 'background: #d2d6de;';
+
   const { height, width } = useWindowDimensions();
   const [modal_table_dict, set_modal_table_dict] = useState(initialize_modal_table_dict());
   const [current_modal_data, set_current_modal_data] = useState([]);
@@ -252,7 +255,8 @@ function App() {
         {!ticking ? "paused" : playback_speed.get_current_speed()}
       </div>
       <div style={{ paddingLeft: "20px" }}>
-        {new Date(current_time()).toISOString()}
+        <div style={{fontWeight: "bold"}}>Target Time:</div>
+        {get_full_time_string(new Date(current_time()))}
       </div>
       <div style={{ paddingLeft: "20px" }}>
         {binary_search_cache(
@@ -260,7 +264,8 @@ function App() {
           new Date(current_time()).toISOString())}
       </div>
       <div style={{ paddingLeft: "20px" }}>
-        {currently_displayed_time}
+        <div style={{fontWeight: "bold"}}>Displayed Time:</div>
+        {get_full_time_string(new Date(currently_displayed_time))}
       </div>
     </div>
   </div>
@@ -268,7 +273,7 @@ function App() {
 
   return (
     <div>
-      <div style={{textAlign: "center", fontSize: "3rem", fontWeight: "bold", margin: "7px 0px 0px 0px"}}>
+      <div style={{ textAlign: "center", fontSize: "3rem", fontWeight: "bold", margin: "9px 0px 0px 0px"}}>
         Historical Bluerock Data
       </div>
       <div style={{ display: "flex", justifyContent: "center" }}>

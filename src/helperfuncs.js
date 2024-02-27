@@ -262,6 +262,17 @@ function update_current_sensor_values(
     })
 }
 
+function get_full_time_string(date) {
+    return date.toLocaleString("en-GB", {
+        day: "numeric",
+        month: "short",
+        year: "numeric",
+        hour: "numeric",
+        minute: "2-digit",
+        second: "2-digit"
+    });
+}
+
 export {
     create_modal_table,
     initialize_modal_table_dict,
@@ -273,5 +284,6 @@ export {
     binary_search_cache,
     update_current_sensor_values,
     PlaybackSpeed,
-    useWindowDimensions
+    useWindowDimensions,
+    get_full_time_string
 };
