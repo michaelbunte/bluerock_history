@@ -60,16 +60,10 @@ function App() {
       let start_time_unix = new Date( all_sensors_cache[0]["plctime"]).getTime();
       let end_time_unix = new Date(all_sensors_cache[all_sensors_cache.length - 1]["plctime"]).getTime();
       let threefourthstime = 3 * (end_time_unix - start_time_unix) / 4 + start_time_unix;
-      console.log("current time")
-      console.log(current_time())
-      console.log(threefourthstime)
       if (current_time() >= threefourthstime || current_time() <= start_time_unix) { return true; }
       return false;
     }
-    console.log("check 1")
-    console.log(all_sensors_cache.length)
     if (!override && !need_to_reupdate_cache() ) { return; }
-    console.log("check 2")
     set_playback_speed((prev) => { prev.set_loading(); return prev; })
     let query_string = `http://${host_string}/bluerock/adaptive_all_sensors/`
       + `${new Date(current_time() - playback_speed.get_minor_range()).toISOString()}/${new Date(current_time() + playback_speed.get_range()).toISOString()}`;
@@ -126,7 +120,6 @@ function App() {
 
       set_time_brush_1(prev => prev + playback_speed.get_current_speed());
       set_time_brush_2(prev => prev + playback_speed.get_current_speed());
-      console.log("checking if new cache updated is needed");
       update_cache_if_needed();
       if (time_brush_2 > (time_brush_image["end"].getTime() + cache_dimensions["end"].getTime()) / 2) {
         const update = async () => {
