@@ -295,7 +295,7 @@ function App() {
         <div >
           <Box width={width * 0.55} contents={<BluerockSchematic md={modal_table_dict} />} />
           <Box width={width * 0.55} contents={playback_buttons} />
-          <Box width={width * 0.55} contents={sensor_table} />
+          <Box width={width * 0.55} height={455} contents={sensor_table} />
         </div>
       </div>
     </div>
