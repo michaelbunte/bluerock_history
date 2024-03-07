@@ -222,12 +222,14 @@ function App() {
     selectedRows={[]}
   />
 
-  // useEffect(() => {
-  //   const headerElement = document.querySelector('.smartTable-header');
-  //   if (headerElement) {
-  //     headerElement.parentNode.removeChild(headerElement);
-  //   }
-  // }, []);
+  // Search bar was causing buggy behavior - it didn't seem like SmartTable
+  // supported a prop to remove the search bar, so here's the workaround
+  useEffect(() => {
+    const headerElement = document.querySelector('.smartTable-header');
+    if (headerElement) {
+      headerElement.parentNode.removeChild(headerElement);
+    }
+  }, []);
 
 
   const play_button_hit = () => {
