@@ -57,13 +57,13 @@ function App() {
   const update_cache_if_needed = async (override) => {
     function need_to_reupdate_cache() {
       if (all_sensors_cache.length == 0) { return true; }
-      let start_time_unix = new Date( all_sensors_cache[0]["plctime"]).getTime();
+      let start_time_unix = new Date(all_sensors_cache[0]["plctime"]).getTime();
       let end_time_unix = new Date(all_sensors_cache[all_sensors_cache.length - 1]["plctime"]).getTime();
       let threefourthstime = 3 * (end_time_unix - start_time_unix) / 4 + start_time_unix;
       if (current_time() >= threefourthstime || current_time() <= start_time_unix) { return true; }
       return false;
     }
-    if (!override && !need_to_reupdate_cache() ) { return; }
+    if (!override && !need_to_reupdate_cache()) { return; }
     set_playback_speed((prev) => { prev.set_loading(); return prev; })
     let query_string = `http://${host_string}/bluerock/adaptive_all_sensors/`
       + `${new Date(current_time() - playback_speed.get_minor_range()).toISOString()}/${new Date(current_time() + playback_speed.get_range()).toISOString()}`;
@@ -175,7 +175,8 @@ function App() {
 
   let sensor_table_data = Object.keys(modal_table_dict)
     .map(key => ({
-      "sensor": modal_table_dict[key]["human_readible_name"],
+      "sensor": modal_table_dict.get(key, "human_readible_name")
+        + (modal_table_dict.get(key, "abbreviated_name") && " (" + modal_table_dict.get(key, "abbreviated_name") + ")"),
       "selectbox_display": <input
         type="checkbox"
         onClick={(e) => {
@@ -221,6 +222,14 @@ function App() {
     selectedRows={[]}
   />
 
+  // useEffect(() => {
+  //   const headerElement = document.querySelector('.smartTable-header');
+  //   if (headerElement) {
+  //     headerElement.parentNode.removeChild(headerElement);
+  //   }
+  // }, []);
+
+
   const play_button_hit = () => {
     set_ticking(prev => !prev);
     if (!ticking) { return; }
@@ -253,17 +262,17 @@ function App() {
           onClick={() => { set_playback_speed(prev => { prev.next_speed(); return prev; }) }} />
       </ButtonGroup>
       <div style={{ paddingLeft: "20px" }}>
-        {!ticking ? "paused" : playback_speed.get_current_speed()}
+        {/* {!ticking ? "paused" : playback_speed.get_current_speed()} */}
       </div>
       <div style={{ paddingLeft: "20px" }}>
         <div style={{ fontWeight: "bold" }}>Target Time:</div>
         {get_full_time_string(new Date(current_time()))}
       </div>
-      <div style={{ paddingLeft: "20px" }}>
+      {/*<div style={{ paddingLeft: "20px" }}>
         {binary_search_cache(
           all_sensors_cache,
           new Date(current_time()).toISOString())}
-      </div>
+        </div>*/}
       <div style={{ paddingLeft: "20px" }}>
         <div style={{ fontWeight: "bold" }}>Displayed Time:</div>
         {get_full_time_string(new Date(currently_displayed_time))}
