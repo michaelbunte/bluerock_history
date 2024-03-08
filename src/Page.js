@@ -208,6 +208,18 @@ function App() {
           update_sensors();
         }}
         checked={modal_table_dict.get(key, "is_selected_display")}
+      />,
+      "selectbox_download" : <input 
+        type="checkbox"
+        onClick={(e)=> {
+          update_selected_sensor(
+            set_modal_table_dict,
+            key,
+            e.target.checked,
+            "download"
+          );
+        }}
+        checked={modal_table_dict.get(key, "is_selected_download")}
       />
     }))
     .filter(a => a["sensor"] !== undefined && a["sensor"] !== "")
