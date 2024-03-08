@@ -2,10 +2,13 @@ import logo from './logo.svg';
 import './App.css';
 import MyChart from './MyChart';
 import Box from './Box';
+import 'react-datetime-picker/dist/DateTimePicker.css';
+import 'react-calendar/dist/Calendar.css';
+import 'react-clock/dist/Clock.css';
 import { SmartTable } from 'adminlte-2-react';
 import BluerockSchematic from './components/BluerockSchematic';
 import { Button, ButtonGroup } from 'adminlte-2-react';
-
+import DateTimePicker from 'react-datetime-picker'
 import { useState, useEffect } from 'react';
 import {
   initialize_modal_table_dict,
@@ -51,6 +54,8 @@ function App() {
   // const [paused, set_paused] = useState(true);
   const [playback_speed, set_playback_speed] = useState(new PlaybackSpeed());
   const [all_sensors_cache, set_all_sensors_cache] = useState([]);
+  const [start_download_date, set_start_download_date] = useState(new Date('2021-01-03'));
+  const [end_download_date, set_end_download_date] = useState(new Date('2021-01-05'));
 
   const current_time = () => (time_brush_1 + time_brush_2) / 2;
 
@@ -209,9 +214,9 @@ function App() {
         }}
         checked={modal_table_dict.get(key, "is_selected_display")}
       />,
-      "selectbox_download" : <input 
+      "selectbox_download": <input
         type="checkbox"
-        onClick={(e)=> {
+        onClick={(e) => {
           update_selected_sensor(
             set_modal_table_dict,
             key,
@@ -287,13 +292,50 @@ function App() {
           all_sensors_cache,
           new Date(current_time()).toISOString())}
         </div>*/}
-      <div style={{ paddingLeft: "20px" }}>
+      <div style={{ padding: "0px 20px" }}>
         <div style={{ fontWeight: "bold" }}>Displayed Time:</div>
         {get_full_time_string(new Date(currently_displayed_time))}
       </div>
     </div>
   </div>
 
+  const download_options = <div style={{
+    display: "flex",
+    alignItems: "center",
+    flexWrap: "wrap",
+    gap: "20px"
+  }}
+  >
+    <ButtonGroup>
+      <Button
+        text="Download Data"
+        color="blue"
+        onClick={() => { }}
+      />
+    </ButtonGroup>
+    <div style={{
+      display: "flex",
+      alignItems: "center",
+      flexWrap: "wrap",
+      gap: "20px"
+    }}
+    >
+      <div>
+        <div>Start Date</div>
+        <DateTimePicker
+          onChange={set_start_download_date}
+          value={start_download_date}
+        />
+      </div>
+      <div>
+        <div>End Date</div>
+        <DateTimePicker
+          onChange={set_end_download_date}
+          value={end_download_date}
+        />
+      </div>
+    </div>
+  </div>
 
   return (
     <div>
@@ -307,7 +349,8 @@ function App() {
         <div >
           <Box width={width * 0.55} contents={<BluerockSchematic md={modal_table_dict} />} />
           <Box width={width * 0.55} contents={playback_buttons} />
-          <Box width={width * 0.55} height={455} contents={sensor_table} />
+          <Box width={width * 0.55} contents={sensor_table} />
+          <Box width={width * 0.55} contents={download_options} />
         </div>
       </div>
     </div>
