@@ -21,7 +21,8 @@ import {
   update_current_sensor_values,
   PlaybackSpeed,
   useWindowDimensions,
-  get_full_time_string
+  get_full_time_string,
+  download_selected_sensors
 } from './helperfuncs';
 
 // let host_string = "ec2-54-215-192-153.us-west-1.compute.amazonaws.com:5001";
@@ -310,7 +311,7 @@ function App() {
       <Button
         text="Download Data"
         color="blue"
-        onClick={() => { }}
+        onClick={()=>download_selected_sensors(start_download_date, end_download_date, modal_table_dict)}
       />
     </ButtonGroup>
     <div style={{

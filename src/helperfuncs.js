@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 
+
 function getWindowDimensions() {
   const { innerWidth: width, innerHeight: height } = window;
   return {
@@ -156,7 +157,7 @@ function get_selected_sensors(
             if (select_type === "display") {
                 return modal_table_dict[key]["is_selected_display"];
             } else if (select_type === "download") {
-                return modal_table_dict[key]["is_selected_display"];
+                return modal_table_dict[key]["is_selected_download"];
             }
         } catch (e) { return false; }
     })
@@ -277,6 +278,39 @@ function get_full_time_string(date) {
     });
 }
 
+const convertToCSV = (data) => {
+    // Extract column headers
+    const headers = Object.keys(data[0]);
+  
+    // Create CSV content
+    const csvContent = [
+      headers.join(','), // CSV header
+      ...data.map(item => headers.map(header => item[header]).join(',')) // CSV rows
+    ].join('\n');
+  
+    return csvContent;
+  };
+
+async function download_selected_sensors(
+    start_date,
+    end_date,
+    modal_table_dict
+) {
+    const selected_sensors = get_selected_sensors(
+        modal_table_dict,
+        "download"
+    );
+    let response = await fetch(`http://${host_string}/bluerock/specific_sensors_range/${selected_sensors}/${start_date}/${end_date}`);
+    let response_json = await response.json();
+
+    const csv = convertToCSV(response_json);
+    const blob = new Blob([csv], { type: 'text/csv' });
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    link.download = 'data.csv';
+    link.click();
+}
+
 export {
     create_modal_table,
     initialize_modal_table_dict,
@@ -289,5 +323,6 @@ export {
     update_current_sensor_values,
     PlaybackSpeed,
     useWindowDimensions,
-    get_full_time_string
+    get_full_time_string,
+    download_selected_sensors
 };
