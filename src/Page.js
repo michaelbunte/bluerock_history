@@ -57,6 +57,7 @@ function App() {
   const [all_sensors_cache, set_all_sensors_cache] = useState([]);
   const [start_download_date, set_start_download_date] = useState(new Date('2021-01-03'));
   const [end_download_date, set_end_download_date] = useState(new Date('2021-01-05'));
+  const [download_data_loading, set_download_data_loading] = useState(false);
 
   const current_time = () => (time_brush_1 + time_brush_2) / 2;
 
@@ -309,9 +310,17 @@ function App() {
   >
     <ButtonGroup>
       <Button
-        text="Download Data"
+        text={download_data_loading ? "loading" : "Download Data"}
         color="blue"
-        onClick={()=>download_selected_sensors(start_download_date, end_download_date, modal_table_dict)}
+        onClick={() => {
+          if (download_data_loading) { return; }
+          const download_data = async () => {
+            set_download_data_loading(true);
+            await download_selected_sensors(start_download_date, end_download_date, modal_table_dict);
+            set_download_data_loading(false);
+          }
+          download_data();
+        }}
       />
     </ButtonGroup>
     <div style={{
