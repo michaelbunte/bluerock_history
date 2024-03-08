@@ -25,8 +25,8 @@ export default function useWindowDimensions() {
 }
 
 
-// let host_string = "ec2-54-215-192-153.us-west-1.compute.amazonaws.com:5001";
-let host_string = "localhost:5001";
+let host_string = "ec2-54-215-192-153.us-west-1.compute.amazonaws.com:5001";
+// let host_string = "localhost:5001";
 
 const initialize_modal_table_dict = () => {
     let modal_table_dict = {
@@ -202,7 +202,7 @@ function binary_search_cache(
     let target_date_obj = new Date(target_date);
     while (Math.abs(start_i - end_i) > 1) {
         let middle_i = Math.floor((start_i + end_i) / 2);
-        let middle_i_date = new Date(cache[middle_i]["plctime"]);
+        let middle_i_date = new Date(cache[middle_i]["timezone"]);
 
         if (middle_i_date <= target_date_obj) {
             start_i = middle_i;

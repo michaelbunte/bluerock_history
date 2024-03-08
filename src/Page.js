@@ -25,8 +25,8 @@ import {
   download_selected_sensors
 } from './helperfuncs';
 
-// let host_string = "ec2-54-215-192-153.us-west-1.compute.amazonaws.com:5001";
-let host_string = "localhost:5001";
+let host_string = "ec2-54-215-192-153.us-west-1.compute.amazonaws.com:5001";
+// let host_string = "localhost:5001";
 
 function get_cache_size(brush_1, brush_2) {
   let brush_1_date = new Date(brush_1);
@@ -42,7 +42,6 @@ function App() {
   const { height, width } = useWindowDimensions();
   const [modal_table_dict, set_modal_table_dict] = useState(initialize_modal_table_dict());
   const [current_modal_data, set_current_modal_data] = useState([]);
-  const [data, set_data] = useState([[]]);
   const [time_brush_1, set_time_brush_1] = useState(1611296444000);
   const [time_brush_2, set_time_brush_2] = useState(1613974844000);
   const [last_received_time, set_last_received_time] = useState(0);
@@ -52,7 +51,6 @@ function App() {
   const [ticking, set_ticking] = useState(false);
   const [is_loading, set_is_loading] = useState(false);
   const [selected_sensor_data, set_selected_sensor_data] = useState({});
-  // const [paused, set_paused] = useState(true);
   const [playback_speed, set_playback_speed] = useState(new PlaybackSpeed());
   const [all_sensors_cache, set_all_sensors_cache] = useState([]);
   const [start_download_date, set_start_download_date] = useState(new Date('2021-01-03'));
@@ -64,18 +62,25 @@ function App() {
   const update_cache_if_needed = async (override) => {
     function need_to_reupdate_cache() {
       if (all_sensors_cache.length == 0) { return true; }
-      let start_time_unix = new Date(all_sensors_cache[0]["plctime"]).getTime();
-      let end_time_unix = new Date(all_sensors_cache[all_sensors_cache.length - 1]["plctime"]).getTime();
+      let start_time_unix = new Date(all_sensors_cache[0]["timezone"]).getTime();
+      let end_time_unix = new Date(all_sensors_cache[all_sensors_cache.length - 1]["timezone"]).getTime();
       let threefourthstime = 3 * (end_time_unix - start_time_unix) / 4 + start_time_unix;
       if (current_time() >= threefourthstime || current_time() <= start_time_unix) { return true; }
       return false;
     }
+
     if (!override && !need_to_reupdate_cache()) { return; }
     set_playback_speed((prev) => { prev.set_loading(); return prev; })
     let query_string = `http://${host_string}/bluerock/adaptive_all_sensors/`
-      + `${new Date(current_time() - playback_speed.get_minor_range()).toISOString()}/${new Date(current_time() + playback_speed.get_range()).toISOString()}`;
+    + `${new Date(current_time() - playback_speed.get_minor_range()).toISOString()}/${new Date(current_time() + playback_speed.get_range()).toISOString()}`;
     let response = await fetch(query_string);
     let response_json = await response.json();
+    console.log("updating cache")
+    console.log(all_sensors_cache)
+    try {
+      console.log(binary_search_cache(all_sensors_cache, current_time()))
+      // console.log(all_sensors_cache[0])
+    } catch(e) {}
     set_all_sensors_cache(response_json);
     set_playback_speed((prev) => { prev.set_not_loading(); return prev; });
   }
@@ -266,7 +271,7 @@ function App() {
       new Date(current_time()).toISOString()
     );
 
-    currently_displayed_time = all_sensors_cache[target_index]["plctime"];
+    currently_displayed_time = all_sensors_cache[target_index]["timezone"];
   } catch (e) { };
 
   const playback_buttons = <div>
