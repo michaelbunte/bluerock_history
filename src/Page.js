@@ -66,30 +66,25 @@ function App() {
       let end_time_unix = new Date(all_sensors_cache[all_sensors_cache.length - 1]["timezone"]).getTime();
       let threefourthstime = 3 * (end_time_unix - start_time_unix) / 4 + start_time_unix;
       if (current_time() >= threefourthstime || current_time() <= start_time_unix) { return true; }
-      return false;
+      return all_sensors_cache;
     }
 
     if (!override && !need_to_reupdate_cache()) { return; }
     set_playback_speed((prev) => { prev.set_loading(); return prev; })
     let query_string = `http://${host_string}/bluerock/adaptive_all_sensors/`
-    + `${new Date(current_time() - playback_speed.get_minor_range()).toISOString()}/${new Date(current_time() + playback_speed.get_range()).toISOString()}`;
+      + `${new Date(current_time() - playback_speed.get_minor_range()).toISOString()}/${new Date(current_time() + playback_speed.get_range()).toISOString()}`;
     let response = await fetch(query_string);
     let response_json = await response.json();
-    console.log("updating cache")
-    console.log(all_sensors_cache)
-    try {
-      console.log(binary_search_cache(all_sensors_cache, current_time()))
-      // console.log(all_sensors_cache[0])
-    } catch(e) {}
     set_all_sensors_cache(response_json);
     set_playback_speed((prev) => { prev.set_not_loading(); return prev; });
+    return response_json;
   }
 
   // initial load
   useEffect(() => {
     async function fetch_data() {
-      let start_date = new Date('2021-01-03');
-      let end_date = new Date('2021-01-05');
+      let start_date = new Date('2021-01-09');
+      let end_date = new Date('2021-01-012');
       set_is_loading(true);
       // set up the modal table dict
       let sensor_table_string = `http://${host_string}/bluerock/sensor_info_table`;
@@ -109,6 +104,7 @@ function App() {
       set_time_brush_1(start_date.getTime());
       set_time_brush_2(end_date.getTime())
       set_is_loading(false);
+      on_window_resize();
     }
     fetch_data();
   }, [])
@@ -156,7 +152,18 @@ function App() {
     let cache_size = get_cache_size(time_brush_1, time_brush_2);
     set_cache_dimensions(cache_size);
     await query_selected_sensors(modal_table_dict, cache_size, set_selected_sensor_data);
-    update_cache_if_needed(true);
+    let new_cache = await update_cache_if_needed(true);
+    try {
+      let target_index = binary_search_cache(
+        new_cache,
+        new Date(current_time()).toISOString()
+      );
+      update_current_sensor_values(
+        set_modal_table_dict,
+        new_cache[target_index]
+      );
+      console.log(all_sensors_cache)
+    } catch (e) { };
     set_is_loading(false);
   }
 
@@ -186,6 +193,7 @@ function App() {
   ];
 
   let sensor_table_data = Object.keys(modal_table_dict)
+    .filter(value => value != "get")
     .map(key => ({
       "sensor": modal_table_dict.get(key, "human_readible_name")
         + (modal_table_dict.get(key, "abbreviated_name") && " (" + modal_table_dict.get(key, "abbreviated_name") + ")"),
@@ -258,9 +266,8 @@ function App() {
 
   const play_button_hit = () => {
     set_ticking(prev => !prev);
-    if (!ticking) { return; }
-
-    update_cache_if_needed();
+    // if (!ticking) { return; }
+    // update_cache_if_needed();
   }
 
   let currently_displayed_time = undefined;
@@ -283,9 +290,9 @@ function App() {
             : <div>▶</div>}
           onClick={play_button_hit}
         />
-        <Button
+        {/* <Button
           text={<div style={{ letterSpacing: "-3px" }}>▶▶</div>}
-          onClick={() => { set_playback_speed(prev => { prev.next_speed(); return prev; }) }} />
+          onClick={() => { set_playback_speed(prev => { prev.next_speed(); return prev; }) }} /> */}
       </ButtonGroup>
       <div style={{ paddingLeft: "20px" }}>
         {/* {!ticking ? "paused" : playback_speed.get_current_speed()} */}

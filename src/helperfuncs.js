@@ -304,6 +304,10 @@ async function download_selected_sensors(
         window.confirm("Please select sensors to download");
         return;
     }
+    if(end_date <= start_date) {
+        window.confirm("Invalid date selection");
+        return;
+    }
 
     let response = await fetch(`http://${host_string}/bluerock/specific_sensors_range/${selected_sensors}/${start_date}/${end_date}`);
     let response_json = await response.json();
